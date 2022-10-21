@@ -22,6 +22,11 @@ public:
 	void ViewCenter(void);
 	void CopyRotation(void);
 	void LoadRotation(void);
+	// my parameterization enums
+	enum class TutteParamType { AVERAGE_WEIGHTED, FLOATER_WEIGHTED };
+	// my parameterization functions
+	void TutteParam(TutteParamType type);
+
 signals:
 	void LoadMeshOKSignal(bool, QString);
 public slots:
@@ -36,8 +41,10 @@ private:
 	void DrawHiddenLines(void) const;
 	void DrawFlatLines(void) const;
 	void DrawFlat(void) const;
+	void DrawSmooth() const;
 	void DrawBoundingBox(void) const;
 	void DrawBoundary(void) const;
+
 protected:
 	acamcad::polymesh::PolyMesh* polyMesh = new acamcad::polymesh::PolyMesh();
 	QString strMeshFileName;

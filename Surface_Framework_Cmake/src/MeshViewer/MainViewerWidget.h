@@ -2,6 +2,7 @@
 #include <QtGui>
 #include <QString>
 #include <QFileDialog>
+
 class MeshParamWidget;
 class InteractiveViewerWidget;
 class MainViewerWidget : public QDialog
@@ -31,10 +32,15 @@ protected:
 	void ShowHiddenLines(void);
 	void ShowFlatLines(void);
 	void ShowFlat(void);
+	void ShowSmooth(void);
 	void Lighting(bool b);
 	void DoubleSideLighting(bool b);
 	void ShowBoundingBox(bool b);
 	void ShowBoundary(bool b);
+	// my tutte parameterization API
+	void TutteParam_AverageWeight();
+	void TutteParam_FlaterWeight();
+
 	void ResetView(void);
 	void ViewCenter(void);
 	void CopyRotation(void);

@@ -35,6 +35,8 @@ private:
 	QAction *actHiddenLines;
 	QAction *actFlatLines;
 	QAction *actFlat;
+	// smooth shading
+	QAction *actSmooth;
 	QAction *actLighting;
 	QAction *actDoubleSide;
 	QAction *actBoundingBox;
@@ -43,6 +45,10 @@ private:
 	QAction *actViewCenter;
 	QAction *actCopyRotation;
 	QAction *actLoadRotation;
+
+	// My action
+	QAction* actParamAverage;
+	QAction* actParamFloater;
 
 	// Help Actions.
 	QAction *actAbout;

@@ -10,16 +10,16 @@
 * [OpenMesh](https://www.openmesh.org/), Recommended version: the latest 8.1(at Oct. 2020)
 
 ## Usage
-* Use vcpkg to install qt
-* Set the VCPKG_ROOT environment variable to the vcpkg root directory
-* Use cmake to build 
+
+
 ```
 cd Surface_Framework_Cmake
-mkdir build 
-cmake -S . -B build
+mkdir build && cd build
+cmake -A x64 ..
 ```
 
-Open **SurfaceFrameworkCmake.sln**, select **SurfaceFrameworkCmake** in build as launch project, and run.
+
+Open **SurfaceFrameworkCmake.sln**, select **SurfaceFrameworkCmake** as launch project, and run.
 
 ## Supported File Formats
 

@@ -77,7 +77,12 @@ void SurfaceMeshProcessing::CreateActions(void)
 	actFlat->setCheckable(true);
 	connect(actFlat, SIGNAL(triggered()), viewer, SLOT(ShowFlat()));
 
-
+	// smooth shading
+	actSmooth = new QAction(tr("Smooth"), this);
+	actSmooth->setIcon(QIcon(":/SurfaceMeshProcessing/Images/smooth.png"));
+	actSmooth->setStatusTip(tr("Show smooth"));
+	actSmooth->setCheckable(true);
+	connect(actSmooth, SIGNAL(triggered()), viewer, SLOT(ShowSmooth()));
 
 	QActionGroup *agViewGroup = new QActionGroup(this);
 	agViewGroup->addAction(actPoints);
@@ -85,6 +90,7 @@ void SurfaceMeshProcessing::CreateActions(void)
 	agViewGroup->addAction(actHiddenLines);
 	agViewGroup->addAction(actFlatLines);
 	agViewGroup->addAction(actFlat);
+	agViewGroup->addAction(actSmooth);
 	actFlatLines->setChecked(true);
 
 	actLighting = new QAction(tr("Light on/off"), this);
@@ -127,6 +133,15 @@ void SurfaceMeshProcessing::CreateActions(void)
 	actLoadRotation->setStatusTip(tr("Load Rotation"));
 	connect(actLoadRotation, SIGNAL(triggered()), viewer, SLOT(LoadRotation()));
 
+	// my action implementation
+	actParamAverage = new QAction("Average Weighted", this);
+	actParamAverage->setStatusTip(tr("Neighbors Weighted Averagely"));
+	connect(actParamAverage, SIGNAL(triggered()), viewer, SLOT(TutteParam_AverageWeight()));
+	
+	actParamFloater = new QAction("Floater Weighted", this);
+	actParamFloater->setStatusTip(tr("Neighbors Weighted Floaterly"));
+	connect(actParamFloater, SIGNAL(triggered()), viewer, SLOT(TutteParam_FlaterWeight()));
+
 	actAbout = new QAction(tr("About"), this);
 	connect(actAbout, SIGNAL(triggered()), SLOT(About()));
 }
@@ -149,6 +164,7 @@ void SurfaceMeshProcessing::CreateMenus(void)
 	menuRenderMode->addAction(actHiddenLines);
 	menuRenderMode->addAction(actFlatLines);
 	menuRenderMode->addAction(actFlat);
+	menuRenderMode->addAction(actSmooth);
 	QMenu *menuLighting = menuView->addMenu(tr("Lighting"));
 	menuLighting->addAction(actLighting);
 	menuLighting->addAction(actDoubleSide);
@@ -161,6 +177,12 @@ void SurfaceMeshProcessing::CreateMenus(void)
 	menuRotation->addAction(actViewCenter);
 	menuRotation->addAction(actCopyRotation);
 	menuRotation->addAction(actLoadRotation);
+
+	// my code
+	QMenu* menuTools = menuBar()->addMenu(tr("&Tool"));
+	QMenu* tutteParam = menuTools->addMenu(tr("Tutte's Param"));
+	tutteParam->addAction(actParamAverage);
+	tutteParam->addAction(actParamFloater);
 
 	QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
 	menuHelp->addAction(actAbout);
@@ -182,6 +204,7 @@ void SurfaceMeshProcessing::CreateToolBars(void)
 	tbView->addAction(actHiddenLines);
 	tbView->addAction(actFlatLines);
 	tbView->addAction(actFlat);
+	tbView->addAction(actSmooth);
 	tbView->addSeparator()->setEnabled(false);
 	tbView->addAction(actLighting);
 	tbView->addAction(actBoundingBox);

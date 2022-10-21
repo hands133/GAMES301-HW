@@ -2,6 +2,9 @@
 #include "assert.h"
 #include <sstream>
 
+#include <unordered_set>
+#include <unordered_map>
+
 namespace acamcad{
 namespace polymesh {
 
@@ -17,6 +20,7 @@ namespace polymesh {
 //=====================================================================
 // Traverse Method
 //=====================================================================
+
 	std::vector<MVert*> PolyMesh::boundaryVertices()
 	{
 		std::vector< std::vector<MVert*> > boundaries;

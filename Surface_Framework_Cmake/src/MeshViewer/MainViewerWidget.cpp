@@ -1,5 +1,6 @@
 #include "MainViewerWidget.h"
 #include "MeshParamWidget.h"
+#include "MeshViewerWidget.h"
 #include "InteractiveViewerWidget.h"
 #include <QLayout>
 #include <QMessageBox>
@@ -140,6 +141,10 @@ void MainViewerWidget::ShowFlat(void)
 	meshviewerwidget->SetDrawMode(InteractiveViewerWidget::FLAT);
 }
 
+void MainViewerWidget::ShowSmooth(void)
+{
+	meshviewerwidget->SetDrawMode(InteractiveViewerWidget::SMOOTH);
+}
 
 
 void MainViewerWidget::Lighting(bool b)
@@ -160,6 +165,17 @@ void MainViewerWidget::ShowBoundingBox(bool b)
 void MainViewerWidget::ShowBoundary(bool b)
 {
 	meshviewerwidget->SetDrawBoundary(b);
+}
+
+// my tutte parameterization API
+void MainViewerWidget::TutteParam_AverageWeight()
+{
+	meshviewerwidget->TutteParam(MeshViewerWidget::TutteParamType::AVERAGE_WEIGHTED);
+}
+
+void MainViewerWidget::TutteParam_FlaterWeight()
+{
+	meshviewerwidget->TutteParam(MeshViewerWidget::TutteParamType::FLOATER_WEIGHTED);
 }
 
 void MainViewerWidget::ResetView(void)

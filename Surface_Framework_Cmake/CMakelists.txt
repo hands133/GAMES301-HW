@@ -1,60 +1,124 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.7)
+project(SurfaceFrameworkCmake)
 
-# vcpkg配置，必须位于project之前
-if (DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    message(STATUS "VCPKG_ROOT: $ENV{VCPKG_ROOT}")
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")# 设置vcpkg工具链
-endif()
-
-message("set VCPKG_ROOT: ${VCPKG_ROOT}")
-#set(VCPKG_FEATURE_FLAGS "version") # 用于支持自定义依赖版本
-
-if (DEFINED ENV{VCPKG_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
-    message(STATUS "VCPKG_TRIPLET: $ENV{VCPKG_TRIPLET}")
-    set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_TRIPLET}" CACHE STRING "")
-endif()
-
-message("set VCPKG_TARGET_TRIPLET: ${VCPKG_TARGET_TRIPLET}")
-
-project(SurfaceFrameworkCmake LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 #设置不生成MinSizeRel;RelWithDebInfo
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
 add_definitions(/D_USE_MATH_DEFINES)
 
+#complier
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    message(STATUS "编译器是gcc")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    message(STATUS "编译器是msvc")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    message(STATUS "编译器是AppleClang")
+    set(Qt5Core_DIR /opt/Qt/5.4/gcc_64/lib/cmake/Qt5Widgets)#设置QT的目录
+    set(Qt5Gui_DIR /opt/Qt/5.4/gcc_64/lib/cmake/Qt5Widgets)
+    set(Qt5OpenGL_DIR /opt/Qt/5.4/gcc_64/lib/cmake/Qt5Widgets)
+    set(Qt5Widgets_DIR /opt/Qt/5.4/gcc_64/lib/cmake/Qt5Widgets)
+endif()
+
+
+
 #QT
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+find_package(Qt5Widgets REQUIRED)  
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
 
-option(SURFACE_OUT_TO_BIN "Output all target files to build/bin" ON)
-option(SURFACE_INSTALL_TARGET "Enable installation targets" OFF)
-
-if (NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
-    # Otherwise we can't link .so libs with .a libs
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+    get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)# https://zhuanlan.zhihu.com/p/73469206, auto-depoly
+    get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+    find_program(DEPLOYQT_EXECUTABLE NAMES windeployqt macdeployqt HINTS "${_qt_bin_dir}")
+elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    find_package(OpenGL REQUIRED)
+    include_directories(${OPENGL_INCLUDE_DIR})
+    find_package(GLUT REQUIRED)
+    include_directories(${GLUT_INCLUDE_DIR})
 endif()
 
-message(STATUS "Build directory: ${PROJECT_BINARY_DIR}")
-message(STATUS "Build type : ${CMAKE_BUILD_TYPE}")
+set(QRC_SOURCE_FILES src/surfacemeshprocessing.qrc)
+qt5_add_resources(QRC_FILES ${QRC_SOURCE_FILES})
 
-if(SURFACE_OUT_TO_BIN)
-    #Otherwise Windows (which doesn't support RPATH) cannot find the DLLs at runtime
-    set(SURFACE_OUTPUT_DIR ${PROJECT_BINARY_DIR}/bin)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${SURFACE_OUTPUT_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${SURFACE_OUTPUT_DIR})
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${SURFACE_OUTPUT_DIR})
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${SURFACE_OUTPUT_DIR}/debug)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${SURFACE_OUTPUT_DIR}/debug)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${SURFACE_OUTPUT_DIR}/debug)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${SURFACE_OUTPUT_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${SURFACE_OUTPUT_DIR})
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${SURFACE_OUTPUT_DIR})
+
+file (GLOB GUI_FILE
+    src/main.cpp
+    src/MeshViewer/MainViewerWidget.*
+    src/MeshViewer/MeshParamWidget.*
+    src/surfacemeshprocessing.h
+    src/surfacemeshprocessing.cpp
+)
+
+file (GLOB MeshViewer_FILE
+    src/MeshViewer/InteractiveViewerWidget.*
+    src/MeshViewer/MeshViewerWidget.*
+    src/MeshViewer/QGLViewerWidget.*
+    src/MeshViewer/stb_image.*
+)
+
+file (GLOB PolyMesh_FILE
+    src/PolyMesh/IOManger.cpp
+    src/PolyMesh/PolyMesh.cpp
+    src/PolyMesh/PolyMesh_Base.cpp
+    src/PolyMesh/PolyMeshIterators.cpp
+    src/include/Math/Algorithms.h
+    src/include/Math/Massage.h
+    src/include/Math/MPoint3.h
+    src/include/Math/Mrgb.h
+    src/include/Math/MVector3.h
+    src/include/PolyMesh/IOManger.h
+    src/include/PolyMesh/MemoryPool.h
+    src/include/PolyMesh/PolyMesh.h
+    src/include/PolyMesh/PolyMesh_Base.h
+    src/include/PolyMesh/PolyMeshIterators.h
+)
+
+
+add_executable(${PROJECT_NAME}
+    ${GUI_FILE}
+    ${MeshViewer_FILE}
+    ${PolyMesh_FILE}
+    ${QRC_FILES}
+)
+
+source_group(GUI FILES ${GUI_FILE})
+source_group(MeshViewer FILES ${MeshViewer_FILE})
+source_group(PolyMesh FILES ${PolyMesh_FILE})
+
+
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+add_custom_command(TARGET ${PROJECT_NAME}
+POST_BUILD
+COMMAND ${DEPLOYQT_EXECUTABLE} "$<TARGET_FILE:${PROJECT_NAME}>"
+    --$<LOWER_CASE:$<CONFIG>> --qmldir ${CMAKE_SOURCE_DIR}
+)
 endif()
 
-add_subdirectory(src)
+target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::OpenGL
+)
+
+# add Eigen
+target_include_directories(${PROJECT_NAME} PUBLIC "3rdparty/Eigen")
+# add glm
+add_subdirectory("3rdparty/glm")
+target_include_directories(${PROJECT_NAME} PUBLIC "3rdparty/glm")
+
+if (CMAKE_SYSTEM_NAME MATCHES "Windows")
+target_link_libraries(${PROJECT_NAME} 
+    opengl32
+    glu32   
+)
+elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    target_link_libraries(${PROJECT_NAME} 
+    ${GLUT_LIBRARY} 
+    ${OPENGL_LIBRARY}
+)
+endif()

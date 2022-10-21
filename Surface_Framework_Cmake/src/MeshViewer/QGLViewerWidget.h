@@ -27,7 +27,7 @@ public:
 	void SetProjectionMode(const ProjectionMode &pm);
 	const ProjectionMode & GetProjectionMode(void) const;
 
-	enum DrawMode{ POINTS, WIREFRAME, HIDDENLINES, FLATLINES, FLAT };
+	enum DrawMode{ POINTS, WIREFRAME, HIDDENLINES, FLATLINES, FLAT, SMOOTH };
 	void SetDrawMode(const DrawMode &dm);
 	const DrawMode& GetDrawMode(void) const;
 
@@ -53,6 +53,8 @@ private:
 	void Rotate(const acamcad::MVector3& axis, const double & angle);
 	bool MapToSphere(const QPoint & point, acamcad::MVector3& result);
 	void UpdateProjectionMatrix(void);
+	// Load uv texture
+	void LoadTexture();
 public:
 	void SetScenePosition(const acamcad::MVector3& c, const double & r);
 	void ViewAll(void);
@@ -72,6 +74,8 @@ protected:
 	QPoint lastpoint2;
 	acamcad::MVector3 lastpoint3;
 	bool lastpointok;
+	// texture
+	unsigned int glTextureID;
 private:
 	static const double trackballradius;
 };

@@ -7,6 +7,8 @@
 #include "QGLViewerWidget.h"
 #include <QOpenGLTexture>
 
+#include "stb_image.h"
+
 const double QGLViewerWidget::trackballradius = 0.6;
 
 QGLViewerWidget::QGLViewerWidget(QWidget* _parent)
@@ -217,7 +219,7 @@ void QGLViewerWidget::initializeGL(void)
 	CopyModelViewMatrix();
 
 	SetScenePosition(acamcad::MVector3(0.0, 0.0, 0.0), 1.0);
-	//LoadTexture();
+	LoadTexture();
 }
 
 void QGLViewerWidget::resizeGL(int _w, int _h)
@@ -257,6 +259,11 @@ void QGLViewerWidget::DrawScene(void)
 		break;
 	case HIDDENLINES:
 		glDisable(GL_LIGHTING);
+		break;
+	// smooth shading
+	case SMOOTH:
+		glEnable(GL_LIGHTING);
+		glShadeModel(GL_SMOOTH);
 		break;
 	default:
 		break;
@@ -461,6 +468,42 @@ void QGLViewerWidget::UpdateProjectionMatrix(void)
 	}
 	glGetDoublev(GL_PROJECTION_MATRIX, &projectionmatrix[0]);
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void QGLViewerWidget::LoadTexture()
+{
+	glGenTextures(1, &glTextureID);
+	glBindTexture(GL_TEXTURE_2D, glTextureID);
+
+	// load and generate texture
+	int width, height, nChannels;
+	unsigned char* data = stbi_load("../src/Images/tiling patterns/R-C3.jpg", &width, &height, &nChannels, 0);
+	//unsigned char* data = stbi_load("../src/Images/tiling patterns/circle.jpg", &width, &height, &nChannels, 0);
+	//unsigned char* data = stbi_load("../src/Images/tiling patterns/pie-factory.png", &width, &height, &nChannels, 0);
+	//unsigned char* data = stbi_load("../src/Images/tiling patterns/cross.jpg", &width, &height, &nChannels, 0);
+	
+	GLint internalFormat = GL_RGBA;
+	if (nChannels == 1) internalFormat = GL_RED;
+	if (nChannels == 2) internalFormat = GL_RG;
+	if (nChannels == 3) internalFormat = GL_RGB;
+	if (nChannels == 4) internalFormat = GL_RGBA;
+
+	if (data)	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, internalFormat, GL_UNSIGNED_BYTE, data);
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+		assert(false);
+	}
+
+	// wrap parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+	stbi_image_free(data);
 }
 
 void QGLViewerWidget::SetScenePosition(const acamcad::MVector3& _center, const double & _radius)
