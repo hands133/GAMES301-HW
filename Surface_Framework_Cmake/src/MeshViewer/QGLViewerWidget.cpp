@@ -470,6 +470,7 @@ void QGLViewerWidget::UpdateProjectionMatrix(void)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+// ============ hw1: load uv mapping texture ============
 void QGLViewerWidget::LoadTexture()
 {
 	glGenTextures(1, &glTextureID);

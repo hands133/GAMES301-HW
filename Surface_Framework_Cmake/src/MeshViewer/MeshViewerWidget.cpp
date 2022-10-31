@@ -298,7 +298,7 @@ void MeshViewerWidget::DrawFlat(void) const
 	glEnd();
 }
 
-// my own-shading code
+// ============ hw1: Smooth shade model  ============
 void MeshViewerWidget::DrawSmooth() const
 {
 	glShadeModel(GL_SMOOTH);

@@ -22,9 +22,9 @@ public:
 	void ViewCenter(void);
 	void CopyRotation(void);
 	void LoadRotation(void);
-	// my parameterization enums
+	// ============ hw1: parameterization enums ============
 	enum class TutteParamType { AVERAGE_WEIGHTED, FLOATER_WEIGHTED };
-	// my parameterization functions
+	// ============ hw1: parameterization function entrance ============
 	void TutteParam(TutteParamType type);
 
 signals:

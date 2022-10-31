@@ -53,7 +53,7 @@ private:
 	void Rotate(const acamcad::MVector3& axis, const double & angle);
 	bool MapToSphere(const QPoint & point, acamcad::MVector3& result);
 	void UpdateProjectionMatrix(void);
-	// Load uv texture
+	// ============ hw1: load uv mapping texture ============
 	void LoadTexture();
 public:
 	void SetScenePosition(const acamcad::MVector3& c, const double & r);
@@ -74,7 +74,7 @@ protected:
 	QPoint lastpoint2;
 	acamcad::MVector3 lastpoint3;
 	bool lastpointok;
-	// texture
+	// ============ hw1: store texture ID ============
 	unsigned int glTextureID;
 private:
 	static const double trackballradius;

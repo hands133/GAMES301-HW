@@ -37,7 +37,7 @@ protected:
 	void DoubleSideLighting(bool b);
 	void ShowBoundingBox(bool b);
 	void ShowBoundary(bool b);
-	// my tutte parameterization API
+	// ============ hw1: Tutte Parameterization API ============
 	void TutteParam_AverageWeight();
 	void TutteParam_FlaterWeight();
 

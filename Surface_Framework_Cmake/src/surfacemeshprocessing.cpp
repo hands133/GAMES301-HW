@@ -77,7 +77,7 @@ void SurfaceMeshProcessing::CreateActions(void)
 	actFlat->setCheckable(true);
 	connect(actFlat, SIGNAL(triggered()), viewer, SLOT(ShowFlat()));
 
-	// smooth shading
+	// ============ hw1: Smooth shading action  ============
 	actSmooth = new QAction(tr("Smooth"), this);
 	actSmooth->setIcon(QIcon(":/SurfaceMeshProcessing/Images/smooth.png"));
 	actSmooth->setStatusTip(tr("Show smooth"));
