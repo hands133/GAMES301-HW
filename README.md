@@ -10,3 +10,8 @@ Simplified CMakeLists.txt to use vcpkg to manage 3dparty for automatly building 
 git checkout hw1_TutteEmbedding
 ./build_windows.bat
 ```
+
++ [Under Construction] Homework 2 : Eigensystems for Isotropic Distortion Energies
+```bash
+git checkout hw2_EnergyEigensystems
+```
