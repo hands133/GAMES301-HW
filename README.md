@@ -14,4 +14,5 @@ git checkout hw1_TutteEmbedding
 + [Under Construction] Homework 2 : Eigensystems for Isotropic Distortion Energies
 ```bash
 git checkout hw2_EnergyEigensystems
+./buid_windows.bat
 ```
