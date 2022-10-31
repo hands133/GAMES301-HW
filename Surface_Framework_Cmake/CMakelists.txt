@@ -48,22 +48,21 @@ endif()
 set(QRC_SOURCE_FILES src/surfacemeshprocessing.qrc)
 qt5_add_resources(QRC_FILES ${QRC_SOURCE_FILES})
 
-
 file (GLOB GUI_FILE
-    src/main.cpp
-    src/MeshViewer/MainViewerWidget.*
-    src/MeshViewer/MeshParamWidget.*
-    src/surfacemeshprocessing.h
-    src/surfacemeshprocessing.cpp
+src/main.cpp
+src/MeshViewer/MainViewerWidget.*
+src/MeshViewer/MeshParamWidget.*
+src/surfacemeshprocessing.h
+src/surfacemeshprocessing.cpp
 )
 
 file (GLOB MeshViewer_FILE
-    src/MeshViewer/InteractiveViewerWidget.*
+src/MeshViewer/InteractiveViewerWidget.*
     src/MeshViewer/MeshViewerWidget.*
     src/MeshViewer/QGLViewerWidget.*
     src/MeshViewer/stb_image.*
 )
-
+    
 file (GLOB PolyMesh_FILE
     src/PolyMesh/IOManger.cpp
     src/PolyMesh/PolyMesh.cpp
@@ -81,28 +80,32 @@ file (GLOB PolyMesh_FILE
     src/include/PolyMesh/PolyMeshIterators.h
 )
 
+# files for homework
 file(GLOB HW1_TutteEmbedding_FILE src/homeworks/TutteEmbedding/**)
-
+file(GLOB HW2_EnergyEigensystems_FILE src/homeworks/EnergyEigensystems/**)
+    
 add_executable(${PROJECT_NAME}
     ${GUI_FILE}
     ${MeshViewer_FILE}
     ${PolyMesh_FILE}
     ${HW1_TutteEmbedding_FILE}
+    ${HW2_EnergyEigensystems_FILE}
     ${QRC_FILES}
 )
-
+    
 source_group(GUI FILES ${GUI_FILE})
 source_group(MeshViewer FILES ${MeshViewer_FILE})
 source_group(PolyMesh FILES ${PolyMesh_FILE})
 
 source_group(HW)
 source_group(HW\\TutteEmbedding FILES ${HW1_TutteEmbedding_FILE})
+source_group(HW\\EnergyEigensystems FILES ${HW2_EnergyEigensystems_FILE})
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 add_custom_command(TARGET ${PROJECT_NAME}
 POST_BUILD
 COMMAND ${DEPLOYQT_EXECUTABLE} "$<TARGET_FILE:${PROJECT_NAME}>"
-    --$<LOWER_CASE:$<CONFIG>> --qmldir ${CMAKE_SOURCE_DIR}
+--$<LOWER_CASE:$<CONFIG>> --qmldir ${CMAKE_SOURCE_DIR}
 )
 endif()
 
@@ -110,10 +113,10 @@ target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::OpenG
 )
 
 target_include_directories(${PROJECT_NAME}
-    PUBLIC "3rdparty/Eigen" # add Eigen
-    PUBLIC "3rdparty/glm"   # add glm
-    PUBLIC "src/homeworks"  # add self-include dir
-    )
+PUBLIC "3rdparty/Eigen" # add Eigen
+PUBLIC "3rdparty/glm"   # add glm
+PUBLIC "src/homeworks"  # add self-include dir
+)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 target_link_libraries(${PROJECT_NAME} 
