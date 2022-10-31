@@ -30,6 +30,7 @@ Note
 + If you want to visualize the 2D parameterization results, uncomment the line 468 in `MeshViewerWidget.cpp`.
 + If you want to change the 2D parameterization boundary shape, please refer to line 416 to line 420 in `MeshViewerWidget.cpp`.
 + If you want to add customized boundary shape, please add enums of `enum class UVBoundaryType` in line 8 in `Util_TutteEmbedding.h`, and implement the corresponding codes calculating UV in switch-case branch in line 17 in `Util_TutteEmbedding.cpp`.
++ If you want to change the uv mapping texture, please refer the `QGLViewerWidget::LoadTexture()` in line 474 in `QGLViewerWidget.cpp`.
 + If you want to change the density of UV mapping, please modify the tiling factor `uvScale` of line 317 in `MeshViewerWidget.cpp`.
 + If you've got good ideas, raise Issue and create Pull requests please.
 
