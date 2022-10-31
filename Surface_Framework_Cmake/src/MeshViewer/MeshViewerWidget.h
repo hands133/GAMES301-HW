@@ -45,6 +45,11 @@ private:
 	void DrawBoundingBox(void) const;
 	void DrawBoundary(void) const;
 
+	// Tutte embedding auxiliary function
+	std::vector<double> CalAdjectWeight(acamcad::polymesh::MVert* v,
+		const std::vector<acamcad::polymesh::MVert*>& adjVerts,
+		MeshViewerWidget::TutteParamType type);
+
 protected:
 	acamcad::polymesh::PolyMesh* polyMesh = new acamcad::polymesh::PolyMesh();
 	QString strMeshFileName;

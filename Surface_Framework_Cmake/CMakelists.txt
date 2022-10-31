@@ -81,11 +81,13 @@ file (GLOB PolyMesh_FILE
     src/include/PolyMesh/PolyMeshIterators.h
 )
 
+file(GLOB HW1_TutteEmbedding_FILE src/homeworks/TutteEmbedding/**)
 
 add_executable(${PROJECT_NAME}
     ${GUI_FILE}
     ${MeshViewer_FILE}
     ${PolyMesh_FILE}
+    ${HW1_TutteEmbedding_FILE}
     ${QRC_FILES}
 )
 
@@ -93,6 +95,8 @@ source_group(GUI FILES ${GUI_FILE})
 source_group(MeshViewer FILES ${MeshViewer_FILE})
 source_group(PolyMesh FILES ${PolyMesh_FILE})
 
+source_group(HW)
+source_group(HW\\TutteEmbedding FILES ${HW1_TutteEmbedding_FILE})
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 add_custom_command(TARGET ${PROJECT_NAME}
@@ -105,11 +109,11 @@ endif()
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::OpenGL
 )
 
-# add Eigen
-target_include_directories(${PROJECT_NAME} PUBLIC "3rdparty/Eigen")
-# add glm
-add_subdirectory("3rdparty/glm")
-target_include_directories(${PROJECT_NAME} PUBLIC "3rdparty/glm")
+target_include_directories(${PROJECT_NAME}
+    PUBLIC "3rdparty/Eigen" # add Eigen
+    PUBLIC "3rdparty/glm"   # add glm
+    PUBLIC "src/homeworks"  # add self-include dir
+    )
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
 target_link_libraries(${PROJECT_NAME} 

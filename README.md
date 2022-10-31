@@ -23,11 +23,14 @@ then run the subproject `SurfaceFrameworkCmake`.
 
 Note
 
++ Relevant codes please refer to `Surface_Framework_Cmake/src/homeworks/TutteEmbedding`:
+  + `Util_TutteEmbedding.h`,
+  + `Util_TutteEmbedding.cpp`.
 + I've add tabs of Tutte's weight and Floater Weight, but the UV mapping is only visible under `smooth rendering` mode.
-+ If you want to visualize the 2D parameterization results, uncomment the line 683 in `MeshViewerWidget.cpp`.
-+ If you want to change the 2D parameterization boundary shape, please refer to line 631 to line 635 in `MeshViewerWidget.cpp`.
-+ If you want to add customized boundary shape, please add enums in `enum class UVBoundaryType` in line 376, and implement the corresponding codes calculating UV in switch-case branch in line 393 in `MeshViewerWidget.cpp`.
-+ If you want to change the density of UV mapping, please modify the tiling factor of line 315 in `MeshViewerWidget.cpp`.
++ If you want to visualize the 2D parameterization results, uncomment the line 468 in `MeshViewerWidget.cpp`.
++ If you want to change the 2D parameterization boundary shape, please refer to line 416 to line 420 in `MeshViewerWidget.cpp`.
++ If you want to add customized boundary shape, please add enums of `enum class UVBoundaryType` in line 8 in `Util_TutteEmbedding.h`, and implement the corresponding codes calculating UV in switch-case branch in line 17 in `Util_TutteEmbedding.cpp`.
++ If you want to change the density of UV mapping, please modify the tiling factor `uvScale` of line 317 in `MeshViewerWidget.cpp`.
 + If you've got good ideas, raise Issue and create Pull requests please.
 
 Parameterization results
