@@ -6,56 +6,37 @@ Simplified CMakeLists.txt to use vcpkg to manage 3dparty for automatly building 
 
 ## GAMES 301 Homework
 
-### Homework 1 : Tutte's Embedding (Planar Parameterization)
+### Homework 2 : Analytic Eigensystems for Isotropic Distortion Energies (2D Symmetric Dirichlet Energy for now)
+
+Prerequisites:
++ Tutte's Embedding structure
 
 Target:
-1. [**Done**] Implement the basic structure of the Tutte's Embedding method.
-2. [**Done**] Calculate the weight of lambda with Tutte's (uniform) and Floater's (shape-preserving) respectively.
-3. [**Done**] Visualize the UV mapping.
+1. [**TODO**] Implement the basic structure of the eigensystem.
 
 Usage:
  
 ```bash
-git checkout hw1_TutteEmbedding
+git checkout hw2_EnergyEigensystems
 ./build_windows.bat
 ```
 then run the subproject `SurfaceFrameworkCmake`.
 
 Note
 
-+ Relevant codes please refer to `Surface_Framework_Cmake/src/homeworks/TutteEmbedding`:
-  + `Util_TutteEmbedding.h`,
-  + `Util_TutteEmbedding.cpp`.
-+ I've add tabs of Tutte's weight and Floater Weight, but the UV mapping is only visible under `smooth rendering` mode.
-+ If you want to visualize the 2D parameterization results, uncomment the line 468 in `MeshViewerWidget.cpp`.
-+ If you want to change the 2D parameterization boundary shape, please refer to line 416 to line 420 in `MeshViewerWidget.cpp`.
-+ If you want to add customized boundary shape, please add enums of `enum class UVBoundaryType` in line 8 in `Util_TutteEmbedding.h`, and implement the corresponding codes calculating UV in switch-case branch in line 17 in `Util_TutteEmbedding.cpp`.
-+ If you want to change the density of UV mapping, please modify the tiling factor `uvScale` of line 317 in `MeshViewerWidget.cpp`.
-+ If you've got good ideas, raise Issue and create Pull requests please.
++ Relevant codes please refer to `Surface_Framework_Cmake/src/homeworks/EnergyEigensystems`:
+  + `Util_EnergyEigensystems.h`,
+  + `Util_EnergyEigensystems.cpp`.
 
 Parameterization results
 
 | Name | Format | Face Type | V | E | F | Boundaries | Storage |
 | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| cathead | OBJ | triangle |  131 |  378 |  248 | 1 |  8 KB |
-|   Balls | OBJ | triangle |  547 | 1578 | 1032 | 1 | 26 KB |
-|    hand | OFF | triangle | 1558 | 4653 | 3096 | 1 | 97 KB |
+|   cathead | OBJ | triangle |  131 |  378 |  248 | 1 |  8 KB |
+|     Balls | OBJ | triangle |  547 | 1578 | 1032 | 1 | 26 KB |
+| Bunnyhead | OBJ | triangle |  741 | 2188 | 1448 | 1 | 54 KB |
+|      hand | OFF | triangle | 1558 | 4653 | 3096 | 1 | 97 KB |
 
 ### Gallery
 
-+ cathead : Tutte's weight
-![cathead of Tuttes' weight](pics/uv/checkerboard/cathead_uniform_poly.png)
-+ cathead : Floater's weight
-![cathead of Floater's weight](pics/uv/checkerboard/cathead_floater_poly.png)
-
-+ Balls : Tutte's weight
-![Balls of Tutte's weight](pics/uv/checkerboard/Balls_uniform_poly.png)
-+ Balls : Floater's weight
-![Balls of Floater's weight](pics/uv/checkerboard/Balls_floater_poly.png)
-
-+ hand : Tutte's weight
-![hand of Tutte's weight](pics/uv/checkerboard/hand_uniform_poly.png)
-+ hand : Floater's weight
-![hand of Floater's weight](pics/uv/checkerboard/hand_floater_poly.png)
-
-> Refer to `./pics` for more results. 
+**Under construction...**
