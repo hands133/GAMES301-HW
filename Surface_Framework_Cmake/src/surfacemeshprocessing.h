@@ -35,7 +35,7 @@ private:
 	QAction *actHiddenLines;
 	QAction *actFlatLines;
 	QAction *actFlat;
-	// smooth shading
+	// ============ hw1: smooth shading ============
 	QAction *actSmooth;
 	QAction *actLighting;
 	QAction *actDoubleSide;
@@ -46,7 +46,7 @@ private:
 	QAction *actCopyRotation;
 	QAction *actLoadRotation;
 
-	// My action
+	// ============ hw1: Actions ============
 	QAction* actParamAverage;
 	QAction* actParamFloater;
 

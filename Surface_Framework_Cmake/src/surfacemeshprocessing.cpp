@@ -77,7 +77,7 @@ void SurfaceMeshProcessing::CreateActions(void)
 	actFlat->setCheckable(true);
 	connect(actFlat, SIGNAL(triggered()), viewer, SLOT(ShowFlat()));
 
-	// smooth shading
+	// ============ hw1: Smooth shading action  ============
 	actSmooth = new QAction(tr("Smooth"), this);
 	actSmooth->setIcon(QIcon(":/SurfaceMeshProcessing/Images/smooth.png"));
 	actSmooth->setStatusTip(tr("Show smooth"));
@@ -178,7 +178,7 @@ void SurfaceMeshProcessing::CreateMenus(void)
 	menuRotation->addAction(actCopyRotation);
 	menuRotation->addAction(actLoadRotation);
 
-	// my code
+	// ============ hw1: Action tab ============
 	QMenu* menuTools = menuBar()->addMenu(tr("&Tool"));
 	QMenu* tutteParam = menuTools->addMenu(tr("Tutte's Param"));
 	tutteParam->addAction(actParamAverage);

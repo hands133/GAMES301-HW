@@ -167,7 +167,7 @@ void MainViewerWidget::ShowBoundary(bool b)
 	meshviewerwidget->SetDrawBoundary(b);
 }
 
-// my tutte parameterization API
+// ============ hw1: Tutte Parameterization API ============
 void MainViewerWidget::TutteParam_AverageWeight()
 {
 	meshviewerwidget->TutteParam(MeshViewerWidget::TutteParamType::AVERAGE_WEIGHTED);

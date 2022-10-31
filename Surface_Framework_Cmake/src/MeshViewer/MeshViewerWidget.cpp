@@ -298,7 +298,7 @@ void MeshViewerWidget::DrawFlat(void) const
 	glEnd();
 }
 
-// my own-shading code
+// ============ hw1: Smooth shade model  ============
 void MeshViewerWidget::DrawSmooth() const
 {
 	glShadeModel(GL_SMOOTH);
@@ -373,8 +373,7 @@ void MeshViewerWidget::DrawBoundary(void) const
 	glLineWidth(linewidth);
 }
 
-/// ==================== my parameterization functions ====================
-
+// ============ hw1: Parameterizatin axuliary functions ============
 std::vector<double> MeshViewerWidget::CalAdjectWeight(acamcad::polymesh::MVert* v, 
 	const std::vector<acamcad::polymesh::MVert*>& adjVerts, 
 	MeshViewerWidget::TutteParamType type)
@@ -393,6 +392,7 @@ std::vector<double> MeshViewerWidget::CalAdjectWeight(acamcad::polymesh::MVert* 
 	return weights;
 }
 
+// ============ hw1: Tutte Embedding entrance ============
 void MeshViewerWidget::TutteParam(TutteParamType type)
 {
 	using mat = Eigen::MatrixXd;

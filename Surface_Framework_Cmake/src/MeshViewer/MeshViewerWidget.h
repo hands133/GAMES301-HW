@@ -22,9 +22,9 @@ public:
 	void ViewCenter(void);
 	void CopyRotation(void);
 	void LoadRotation(void);
-	// my parameterization enums
+	// ============ hw1: parameterization enums ============
 	enum class TutteParamType { AVERAGE_WEIGHTED, FLOATER_WEIGHTED };
-	// my parameterization functions
+	// ============ hw1: parameterization function entrance ============
 	void TutteParam(TutteParamType type);
 
 signals:
@@ -45,7 +45,7 @@ private:
 	void DrawBoundingBox(void) const;
 	void DrawBoundary(void) const;
 
-	// Tutte embedding auxiliary function
+	// ============ hw1: Tutte Embedding auxiliary function ============
 	std::vector<double> CalAdjectWeight(acamcad::polymesh::MVert* v,
 		const std::vector<acamcad::polymesh::MVert*>& adjVerts,
 		MeshViewerWidget::TutteParamType type);
