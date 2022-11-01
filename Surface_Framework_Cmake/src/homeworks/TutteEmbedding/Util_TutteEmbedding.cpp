@@ -111,7 +111,6 @@ namespace tutte
 
 			// 2. scale factor
 			double scale = neighborAngleInfo[j].x / neighborAngleInfo[j - 1].x;
-			double dP = scale * glm::sqrt(glm::dot(adjUVs[j - 1] - P, adjUVs[j - 1] - P));
 			glm::dmat2x2 scaleMat2({ scale, 0.0 }, { 0.0, scale });
 
 			adjUVs[j] = scaleMat2 * rotateMat2 * adjUVs[j - 1];
