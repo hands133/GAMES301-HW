@@ -37,11 +37,13 @@ bool MeshViewerWidget::LoadMesh(const std::string & filename)
 		strMeshBaseName = fi.baseName();
 		UpdateMesh();
 		update();
+
+		isParameterized = false;
+		isProjNewtonSolver = false;
+
 		return true;
 	}
 
-	isParameterized = false;
-	isProjNewtonSolver = false;
 	return false;
 }
 
@@ -403,7 +405,7 @@ std::vector<double> MeshViewerWidget::CalAdjectWeight(acamcad::polymesh::MVert* 
 	return weights;
 }
 
-void MeshViewerWidget::TutteParam(TutteParamType type)
+Eigen::SparseMatrix<double> MeshViewerWidget::TutteParam(TutteParamType type)
 {
 	using acamcad::polymesh::MVert;
 	std::cout << "Tutte's Parameterization\n";
@@ -411,7 +413,7 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 	if (polyMesh->numVertices() == 0)
 	{
 		std::cerr << "ERROR: TutteParam() No vertices!" << std::endl;
-		return;
+		return Eigen::SparseMatrix<double>();
 	}
 
 	/// ====== calculate boundary vertices ======
@@ -462,6 +464,9 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 	}
 
 	/// 3. solve the equation Ax = b
+	//Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double>> solver;
+	//solver.setTolerance(std::numeric_limits<float>::epsilon());
+	//solver.setMaxIterations(2000);
 	Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
 	solver.analyzePattern(A);
 	solver.factorize(A);
@@ -485,6 +490,10 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 
 	UpdateMesh();
 	update();
+
+	paramUVs = x;
+
+	return paramUVs;
 }
 
 void MeshViewerWidget::ProjNewtonSolver()
@@ -498,17 +507,21 @@ void MeshViewerWidget::ProjNewtonSolver()
 	if (!isParameterized)
 	{
 		std::cout << "The mesh hasn't been parameterized yet, run with Tutte's Embedding...\n";
-		this->TutteParam(TutteParamType::AVERAGE_WEIGHTED);
+		paramUVs = this->TutteParam(TutteParamType::FLOATER_WEIGHTED);
+		isParameterized = true;
 	}
 
 	// now we've got methods
 	if (!isProjNewtonSolver)
 	{
-		m_ProjNewtonSolver.PresetMeshUV(polyMesh);
+		m_ProjNewtonSolver.PresetMeshUV(polyMesh, paramUVs);
 		isProjNewtonSolver = true;
 	}
 
 	while (m_ProjNewtonSolver.UpdateMeshUV(polyMesh));
+
+	// TODO : constrain UV
+
 	UpdateMesh();
 	update();
 }

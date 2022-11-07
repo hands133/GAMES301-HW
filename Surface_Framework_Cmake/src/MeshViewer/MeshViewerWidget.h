@@ -5,6 +5,8 @@
 
 #include "EnergyEigensystems\Util_EnergyEigensystems.h"
 
+#include <Eigen\Sparse>
+
 class MeshViewerWidget : public QGLViewerWidget
 {
 	Q_OBJECT
@@ -27,7 +29,7 @@ public:
 	// ============ hw1: parameterization enums ============
 	enum class TutteParamType { AVERAGE_WEIGHTED, FLOATER_WEIGHTED };
 	// ============ hw1: parameterization function entrance ============
-	void TutteParam(TutteParamType type);
+	Eigen::SparseMatrix<double> TutteParam(TutteParamType type);
 	void ProjNewtonSolver();
 
 
@@ -70,6 +72,7 @@ protected:
 	// ============ hw2: Project Newton Method member ============
 	bool isParameterized = false;
 	bool isProjNewtonSolver = false;
+	Eigen::SparseMatrix<double> paramUVs;
 
 	eigensys::ProjectNewtonSolver m_ProjNewtonSolver;
 };
