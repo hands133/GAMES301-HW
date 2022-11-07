@@ -10,25 +10,38 @@
 #include <Eigen\SparseLU>
 #include <Eigen\IterativeLinearSolvers>
 
-//#include <fstream>
-//#include <string>
-
 namespace eigensys
 {
-	// only used for UpdateMeshUV
-	Eigen::VectorXd ProjectNewtonSolver::SetupUVs(acamcad::polymesh::PolyMesh* mesh)
+	// constrain UV in range [0, 1]x[0, 1]
+	void ProjectNewtonSolver::ConstrainUV(acamcad::polymesh::PolyMesh* mesh, const Eigen::VectorXd& UVs)
 	{
-		size_t numV = mesh->vertices().size();
+		double xmin = std::numeric_limits<double>::max();
+		double xmax = -std::numeric_limits<double>::max();
+		double ymin = std::numeric_limits<double>::max();
+		double ymax = -std::numeric_limits<double>::max();
 
-		Eigen::VectorXd UVs(2 * numV);
-		UVs.setZero();
+		size_t numV = mesh->vertices().size();
 		for (size_t vertID = 0; vertID < numV; ++vertID)
 		{
-			acamcad::Texcoord uvw = mesh->vert(vertID)->getTexture();
-			UVs[2 * vertID + 0] = uvw[0];
-			UVs[2 * vertID + 1] = uvw[1];
+			double x = UVs(vertID * 2 + 0);
+			double y = UVs(vertID * 2 + 1);
+			
+			xmin = std::min(xmin, x);
+			xmax = std::max(xmax, x);
+			ymin = std::min(ymin, y);
+			ymax = std::max(ymax, y);
 		}
-		return UVs;
+
+		for (size_t vertID = 0; vertID < numV; ++vertID)
+		{
+			auto* vert = mesh->vert(vertID);
+			float UVx = static_cast<float>(UVs(2 * vertID + 0));
+			float UVy = static_cast<float>(UVs(2 * vertID + 1));
+			UVx = (UVx - xmin) / (xmax - xmin);
+			UVy = (UVy - ymin) / (ymax - ymin);
+			vert->setTexture(UVx, UVy, 0.0);
+			vert->setPosition(UVx, UVy, 0.0);
+		}
 	}
 
 	// x comes from tutte's embedding results
@@ -76,9 +89,6 @@ namespace eigensys
 			Eigen::Vector2d P2{ v10.dot(v20) / v10.norm(), v10.cross(v20).norm() / v10.norm() };
 
 			m_DmList[faceID] << P1 - P0, P2 - P0;
-
-			//m_DmList[faceID] << Eigen::Vector2d(v10.norm(), 0),
-			//	Eigen::Vector2d(v10.dot(v20), v10.cross(v20).norm()) / v10.norm();
 		}
 	}
 
@@ -90,37 +100,16 @@ namespace eigensys
 
 		std::cout << "[ProjectNewton] ";
 
-		//m_UVList = SetupUVs(mesh);
+		auto [G, H] = CalculateEnergyDerivative(mesh, m_UVList);
 
-		auto [G, H] = CalculateGlobalEnergyDerivative(mesh, m_UVList);
+		std::cout << "max |Gi| = " << G.cwiseAbs().maxCoeff() << "\t";
 
-		//std::ofstream Hfile("H.txt");
-		//std::ofstream bfile("b.txt");
-
-		//for (int k = 0; k < H.outerSize(); ++k)
-		//	for (Eigen::SparseMatrix<double>::InnerIterator it(H, k); it; ++it)
-		//	{
-		//		it.value();
-		//		it.row();   // row index
-		//		it.col();   // col index (here it is equal to k)
-		//		it.index(); // inner index, here it is equal to it.row()
-		//		Hfile << it.row() << "\t" << it.col() << "\t" << it.value() << "\n";
-		//	}
-
-		//for (size_t vertID = 0; vertID < numV; ++vertID)
-		//	bfile << G(vertID * 2) << "\n" << G(vertID * 2 + 1) << "\n";
-
-		//Hfile.close();
-		//bfile.close();
-
-		//std::cout << "max |Gi| = " << G.cwiseAbs().maxCoeff() << "\t";
-
-		//if (G.cwiseAbs().maxCoeff() < 1.0e-4)
-		//{
-		//	std::cout << "================CONVERGE!!!================\n";
-		//	Iters = 0;
-		//	return false;
-		//}
+		if (G.cwiseAbs().maxCoeff() < 1.0e-4)
+		{
+			std::cout << "================CONVERGE!!!================\n";
+			m_Iters = 0;
+			return false;
+		}
 
 		if (m_FirstUpdate)
 		{
@@ -128,84 +117,21 @@ namespace eigensys
 			m_FirstUpdate = false;
 		}
 		
-		//Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> solver;
-		//Eigen::BiCGSTAB<Eigen::SparseMatrix<double>> solver;
-		//Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteCholesky<double>> solver;
-		//solver.setTolerance(std::numeric_limits<float>::epsilon());
-		//solver.setMaxIterations(2000);
-		//Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
 		Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
-		solver.setShift(std::numeric_limits<float>::epsilon());
+		solver.setShift(std::numeric_limits<float>::epsilon());		// necessary
 		solver.analyzePattern(H);
 		solver.factorize(H);
 		Eigen::VectorXd d = solver.solve(-G);
 
-
-		std::cout << "|G| = " << G.norm() << "\t|d| = " << d.norm() << "\t";
-
-		double dTG = -0.5 * d.dot(G);
-		std::cout << "-0.5dot(d,b) = " << dTG << "\t";
-
-		if (dTG < 1.0e-4)
-		{
-			std::cout << "================CONVERGE!!!================\n";
-			m_Iters = 0;
-			return false;
-		}
-
 		auto [energy, updatedUV] = Line_Search(mesh, d, G, m_UVList, m_Energy, 0.8, 1.0e-4);
-		assert(!std::isnan(energy) && !std::isinf(energy));
 
 		m_Energy = energy;
 		m_UVList = updatedUV;
 
-		for (size_t vertID = 0; vertID < numV; ++vertID)
-		{
-			auto* vert = mesh->vert(vertID);
-			float UVx = static_cast<float>(updatedUV(2 * vertID + 0));
-			float UVy = static_cast<float>(updatedUV(2 * vertID + 1));
-			vert->setTexture(UVx, UVy, 0.0);
-			vert->setPosition(UVx, UVy, 0.0);
-		}
+		ConstrainUV(mesh, updatedUV);
 
 		return true;
 	}
-
-	//QPW_EigenSystem2D ProjectNewtonSolver::Eval_Energy_EigenSystem(const QPW_DataPack& pack) const
-	//{
-	//	const auto& decomp = pack.m_Decomposition;
-	//	const auto& invars = pack.m_Invariables;
-
-	//	const auto& U = decomp.U;
-	//	const auto& Sigma = decomp.Sigma;
-	//	const auto& V = decomp.V;
-
-	//	double I1 = invars.I1;
-	//	double I2 = invars.I2;
-	//	double I3 = invars.I3;
-
-	//	Eigen::Matrix2d twist;
-	//	twist << 0, -1, 1, 0;
-
-	//	Eigen::Matrix2d flip;
-	//	flip << 0, 1, 1, 0;
-
-	//	QPW_EigenSystem2D eigensys;
-
-	//	Eigen::Matrix2d D1 = U * Eigen::Vector2d(1, 0).asDiagonal() * V.transpose();
-	//	eigensys.valvecpairs[0] = { 1.0 + 3.0 / std::pow(Sigma(0, 0), 4.0), opVEC(D1) };
-
-	//	Eigen::Matrix2d D2 = U * Eigen::Vector2d(0, 1).asDiagonal() * V.transpose();
-	//	eigensys.valvecpairs[1] = { 1.0 + 3.0 / std::pow(Sigma(1, 1), 4.0), opVEC(D2) };
-
-	//	Eigen::Matrix2d L = 1.0 / std::sqrt(2.0) * U * flip * V.transpose();
-	//	eigensys.valvecpairs[2] = { 1.0 + 1.0 / std::pow(I3, 2.0) + I2 / std::pow(I3, 3.0), opVEC(L) };
-
-	//	Eigen::Matrix2d T = 1.0 / std::sqrt(2.0) * U * twist * V.transpose();
-	//	eigensys.valvecpairs[3] = { 1.0 + 1.0 / std::pow(I3, 2.0) - I2 / std::pow(I3, 3.0), opVEC(T) };
-
-	//	return eigensys;
-	//}
 
 	//Eigen::Matrix4d ProjectNewtonSolver::Calculatep2PSIq_pfq2(const QPW_EigenSystem2D& eigensys) const
 	//{
@@ -310,7 +236,7 @@ namespace eigensys
 	}
 
 	std::tuple<Eigen::VectorXd, Eigen::SparseMatrix<double>>
-		ProjectNewtonSolver::CalculateGlobalEnergyDerivative(
+		ProjectNewtonSolver::CalculateEnergyDerivative(
 		acamcad::polymesh::PolyMesh* mesh, const Eigen::VectorXd& UVs)
 	{
 		size_t numV = mesh->vertices().size();
@@ -328,20 +254,11 @@ namespace eigensys
 		{
 			auto ids = PolyFaceVertIdxs(mesh, faceID) * 2;
 
-			Eigen::Vector2d P0 = UVs.segment(ids(0), 2);
-			Eigen::Vector2d P1 = UVs.segment(ids(1), 2);
-			Eigen::Vector2d P2 = UVs.segment(ids(2), 2);
-
-			acamcad::Texcoord C0 = mesh->vert(ids(0) / 2)->getTexture();
-			acamcad::Texcoord C1 = mesh->vert(ids(1) / 2)->getTexture();
-			acamcad::Texcoord C2 = mesh->vert(ids(2) / 2)->getTexture();
-
 			Eigen::Matrix2d Ds;
-			//Ds << UVs.segment(ids(1), 2) - UVs.segment(ids(0), 2),
-			//	  UVs.segment(ids(2), 2) - UVs.segment(ids(0), 2);
-			Ds << P1 - P0, P2 - P0;
+			Ds << UVs.segment(ids(1), 2) - UVs.segment(ids(0), 2),
+				  UVs.segment(ids(2), 2) - UVs.segment(ids(0), 2);
 
-			auto [gradq, hessq] = CalculateLocalEnergyDerivative(mesh, m_DmList[faceID], Ds);
+			auto [gradq, hessq] = QPW_CalculateEnergyDerivative(mesh, m_DmList[faceID], Ds);
 
 			int GlobalCoord[6] = { ids(0), ids(0) + 1, ids(1), ids(1) + 1, ids(2), ids(2) + 1 };
 			
@@ -354,69 +271,12 @@ namespace eigensys
 			assert(!std::isnan(GRAD.norm()));
 		}
 
-
 		HESS.setFromTriplets(HESStrips.begin(), HESStrips.end());
 		return std::make_tuple(GRAD, HESS);
 	}
 
-	// return gradient grad(PSIq) and Hq
-	//std::tuple<Eigen::Vector<double, 6>, Eigen::Matrix<double, 6, 6>> 
-	//	ProjectNewtonSolver::CalculateLocalEnergyDerivativeNoArea(
-	//		acamcad::polymesh::PolyMesh* mesh,
-	//		const Eigen::Matrix2d& Dm,
-	//		const Eigen::Matrix2d& Ds,
-	//		const Eigen::VectorXd& UVs,
-	//		size_t faceID)
-	//{
-	//	QPW_DataPack pack(Dm);
-	//	pack.CalculatepF_pDs(Ds);
-
-	//	auto pfq_pxq = pack.GetLocalpfq_pxq();
-	//	auto pPSIq_pfq = CalculatepPSIq_pfq(pack);
-
-	//	// gradient
-	//	auto GRADq = pfq_pxq.transpose() * pPSIq_pfq;
-
-	//	// hessian
-	//	auto eigensys = Eval_Energy_EigenSystem(pack);
-	//	auto p2PSIq_pfq2 = Calculatep2PSIq_pfq2(eigensys);
-
-	//	auto HESSq = pfq_pxq.transpose() * p2PSIq_pfq2 * pfq_pxq;
-
-	//	// NOTE p2PSIq_pfq2 positive-semi definite, 
-	//	//{
-	//	//	using LocalDataType = TinyAD::Double<6>;
-	//	//	// use tinyad to make sure the result are correct
-	//	//	auto ids = PolyFaceVertIdxs(mesh, faceID) * 2;
-	//	//	Eigen::Vector<LocalDataType, 6> vvec = LocalDataType::make_active(
-	//	//		{
-	//	//			UVs(ids(0)), UVs(ids(0) + 1),
-	//	//			UVs(ids(1)), UVs(ids(1) + 1),
-	//	//			UVs(ids(2)), UVs(ids(2) + 1)
-	//	//		});
-	//	//	Eigen::Vector2<LocalDataType> P0;
-	//	//	Eigen::Vector2<LocalDataType> P1;
-	//	//	Eigen::Vector2<LocalDataType> P2;
-
-	//	//	P0 << vvec[0], vvec[1];
-	//	//	P1 << vvec[2], vvec[3];
-	//	//	P2 << vvec[4], vvec[5];
-
-	//	//	Eigen::Matrix2<LocalDataType> vDs;
-	//	//	vDs << P1 - P0, P2 - P0;
-	//	//	Eigen::Matrix2<LocalDataType> vDm = Dm;
-
-	//	//	Eigen::Matrix2<LocalDataType> FF = vDs * vDm.inverse();
-	//	//	auto cost = 0.5 * (FF.squaredNorm() + FF.inverse().squaredNorm());
-	//	//	std::cout << "|cost.grad - GRADq| = " << (cost.grad - GRADq).transpose().norm() << std::endl;
-	//	//	return std::make_tuple(cost.grad, cost.Hess);
-	//	//}
-
-	//	return std::make_tuple(GRADq, HESSq);
-	//}
-
 	std::tuple<Eigen::Vector<double, 6>, Eigen::Matrix<double, 6, 6>> 
-		ProjectNewtonSolver::CalculateLocalEnergyDerivative(
+		ProjectNewtonSolver::QPW_CalculateEnergyDerivative(
 		acamcad::polymesh::PolyMesh* mesh, const Eigen::Matrix2d& Dm, const Eigen::Matrix2d& Ds)
 	{
 		Eigen::Matrix2d DmInv = Dm.inverse();
@@ -465,21 +325,27 @@ namespace eigensys
 
 				if (detU < 0 && detV > 0)	U = U * L;
 				if (detU > 0 && detV < 0)	V = V * L;
-				Eigen::Matrix2d transsigma = sigma.asDiagonal() * L;
-				sigma = transsigma.diagonal();
+				sigma = (sigma.asDiagonal() * L).diagonal();
 			}
+
+			Eigen::Matrix2d R = U * V.transpose();
+			Eigen::Matrix2d S = V * sigma.asDiagonal() * V.transpose();
+
+			double sigma1 = sigma(0);
+			double sigma2 = sigma(1);
 
 			Eigen::Matrix2d twist;
 			twist << 0, -1, 1, 0;
 			Eigen::Matrix2d flip;
 			flip << 0, 1, 1, 0;
 
-			double I2 = F.squaredNorm();
-			double I3 = F.determinant();
-			double lam1 = 1 + 3 / (sigma[0] * sigma[0] * sigma[0] * sigma[0]);
-			double lam2 = 1 + 3 / (sigma[1] * sigma[1] * sigma[1] * sigma[1]);
-			double lam3 = 1 + 1 / (I3 * I3) + I2 / (I3 * I3 * I3);
-			double lam4 = 1 + 1 / (I3 * I3) - I2 / (I3 * I3 * I3);
+			double I2 = S.squaredNorm();
+			double I3 = S.determinant();
+
+			double lam1 = 1 + 3 / std::pow(sigma1, 4.0);
+			double lam2 = 1 + 3 / std::pow(sigma2, 4.0);
+			double lam3 = 1 + 1 / std::pow(I3, 2.0) + I2 / std::pow(I3, 3.0);
+			double lam4 = 1 + 1 / std::pow(I3, 2.0) - I2 / std::pow(I3, 3.0);
 
 			lam3 = std::max(lam3, 0.0);
 			lam4 = std::max(lam4, 0.0);

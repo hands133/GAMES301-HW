@@ -30,6 +30,7 @@ public:
 	enum class TutteParamType { AVERAGE_WEIGHTED, FLOATER_WEIGHTED };
 	// ============ hw1: parameterization function entrance ============
 	Eigen::SparseMatrix<double> TutteParam(TutteParamType type);
+	// ============ hw2: Project Newton Method ============
 	void ProjNewtonSolver();
 
 
@@ -72,6 +73,7 @@ protected:
 	// ============ hw2: Project Newton Method member ============
 	bool isParameterized = false;
 	bool isProjNewtonSolver = false;
+
 	Eigen::SparseMatrix<double> paramUVs;
 
 	eigensys::ProjectNewtonSolver m_ProjNewtonSolver;

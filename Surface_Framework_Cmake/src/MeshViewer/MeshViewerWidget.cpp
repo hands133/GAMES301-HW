@@ -41,6 +41,8 @@ bool MeshViewerWidget::LoadMesh(const std::string & filename)
 		isParameterized = false;
 		isProjNewtonSolver = false;
 
+		paramUVs.setZero();
+
 		return true;
 	}
 
@@ -460,13 +462,11 @@ Eigen::SparseMatrix<double> MeshViewerWidget::TutteParam(TutteParamType type)
 		double weightSUM = std::accumulate(weights.begin(), weights.end(), 0.0);
 		for (int j = 0; j < adjVerts.size(); ++j)
 			A.insert(vID, adjVerts[j]->index()) = weights[j];
+
 		A.insert(vID, vID) = -weightSUM;
 	}
 
 	/// 3. solve the equation Ax = b
-	//Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double>> solver;
-	//solver.setTolerance(std::numeric_limits<float>::epsilon());
-	//solver.setMaxIterations(2000);
 	Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
 	solver.analyzePattern(A);
 	solver.factorize(A);
@@ -520,7 +520,7 @@ void MeshViewerWidget::ProjNewtonSolver()
 
 	while (m_ProjNewtonSolver.UpdateMeshUV(polyMesh));
 
-	// TODO : constrain UV
+	isProjNewtonSolver = false;
 
 	UpdateMesh();
 	update();
