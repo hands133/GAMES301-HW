@@ -1,3 +1,6 @@
 [submodule "Surface_Framework_Cmake/3rdparty/glm"]
 	path = Surface_Framework_Cmake/3rdparty/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "Surface_Framework_Cmake/3rdparty/TinyAD"]
+	path = Surface_Framework_Cmake/3rdparty/TinyAD
+	url = https://github.com/patr-schm/TinyAD.git

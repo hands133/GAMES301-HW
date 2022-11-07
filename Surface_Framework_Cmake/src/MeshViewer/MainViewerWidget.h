@@ -40,6 +40,8 @@ protected:
 	// ============ hw1: Tutte Parameterization API ============
 	void TutteParam_AverageWeight();
 	void TutteParam_FlaterWeight();
+	// ============ hw2: Project Newton Solver ============
+	void ProjNewtonSolver();
 
 	void ResetView(void);
 	void ViewCenter(void);

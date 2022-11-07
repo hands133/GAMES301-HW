@@ -133,7 +133,7 @@ void SurfaceMeshProcessing::CreateActions(void)
 	actLoadRotation->setStatusTip(tr("Load Rotation"));
 	connect(actLoadRotation, SIGNAL(triggered()), viewer, SLOT(LoadRotation()));
 
-	// my action implementation
+	// ============ hw1: Actions ============
 	actParamAverage = new QAction("Average Weighted", this);
 	actParamAverage->setStatusTip(tr("Neighbors Weighted Averagely"));
 	connect(actParamAverage, SIGNAL(triggered()), viewer, SLOT(TutteParam_AverageWeight()));
@@ -141,6 +141,11 @@ void SurfaceMeshProcessing::CreateActions(void)
 	actParamFloater = new QAction("Floater Weighted", this);
 	actParamFloater->setStatusTip(tr("Neighbors Weighted Floaterly"));
 	connect(actParamFloater, SIGNAL(triggered()), viewer, SLOT(TutteParam_FlaterWeight()));
+
+	// ============ hw2: Actions ============
+	actProjNewtonSolver = new QAction("Project Newton Solver", this);
+	actProjNewtonSolver->setStatusTip(tr("Optimize Tutte's Embedding with Project-Newton-Solver"));
+	connect(actProjNewtonSolver, SIGNAL(triggered()), viewer, SLOT(ProjNewtonSolver()));
 
 	actAbout = new QAction(tr("About"), this);
 	connect(actAbout, SIGNAL(triggered()), SLOT(About()));
@@ -178,11 +183,14 @@ void SurfaceMeshProcessing::CreateMenus(void)
 	menuRotation->addAction(actCopyRotation);
 	menuRotation->addAction(actLoadRotation);
 
-	// my code
+	// tutte embedding action
 	QMenu* menuTools = menuBar()->addMenu(tr("&Tool"));
 	QMenu* tutteParam = menuTools->addMenu(tr("Tutte's Param"));
 	tutteParam->addAction(actParamAverage);
 	tutteParam->addAction(actParamFloater);
+
+	QMenu* paramOpt = menuTools->addMenu(tr("Mesh Optimizer"));
+	paramOpt->addAction(actProjNewtonSolver);
 
 	QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
 	menuHelp->addAction(actAbout);

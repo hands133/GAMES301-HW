@@ -116,6 +116,7 @@ target_include_directories(${PROJECT_NAME}
 PUBLIC "3rdparty/Eigen" # add Eigen
 PUBLIC "3rdparty/glm"   # add glm
 PUBLIC "src/homeworks"  # add self-include dir
+PUBLIC "3rdparty/TinyAD/include"
 )
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")

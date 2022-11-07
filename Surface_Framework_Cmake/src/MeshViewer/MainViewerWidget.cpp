@@ -178,6 +178,12 @@ void MainViewerWidget::TutteParam_FlaterWeight()
 	meshviewerwidget->TutteParam(MeshViewerWidget::TutteParamType::FLOATER_WEIGHTED);
 }
 
+// ============ hw2: Project Newton Solver API ============
+void MainViewerWidget::ProjNewtonSolver()
+{
+	meshviewerwidget->ProjNewtonSolver();
+}
+
 void MainViewerWidget::ResetView(void)
 {
 	meshviewerwidget->ResetView();

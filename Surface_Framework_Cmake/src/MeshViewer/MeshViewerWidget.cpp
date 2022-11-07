@@ -1,8 +1,9 @@
 #include <QtCore>
 #include "MeshViewerWidget.h"
 
-#include <tuple>
-#include <Eigen3\Dense>
+#include <Eigen\Dense>
+#include <Eigen\Sparse>
+#include <Eigen\SparseLU>
 #include <glm\glm.hpp>
 
 #include "TutteEmbedding\Util_TutteEmbedding.h"
@@ -38,6 +39,9 @@ bool MeshViewerWidget::LoadMesh(const std::string & filename)
 		update();
 		return true;
 	}
+
+	isParameterized = false;
+	isProjNewtonSolver = false;
 	return false;
 }
 
@@ -177,6 +181,13 @@ void MeshViewerWidget::DrawScene(void)
 	if (isEnableLighting) glEnable(GL_LIGHTING);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, isTwoSideLighting);
 	DrawSceneMesh();
+
+	//if (isProjNewtonSolver)
+	//{
+	//	isProjNewtonSolver = m_ProjNewtonSolver.UpdateMeshUV(polyMesh);
+	//	UpdateMesh();
+	//}
+
 	if (isEnableLighting) glDisable(GL_LIGHTING);
 }
 
@@ -374,7 +385,6 @@ void MeshViewerWidget::DrawBoundary(void) const
 }
 
 /// ==================== my parameterization functions ====================
-
 std::vector<double> MeshViewerWidget::CalAdjectWeight(acamcad::polymesh::MVert* v, 
 	const std::vector<acamcad::polymesh::MVert*>& adjVerts, 
 	MeshViewerWidget::TutteParamType type)
@@ -395,7 +405,6 @@ std::vector<double> MeshViewerWidget::CalAdjectWeight(acamcad::polymesh::MVert* 
 
 void MeshViewerWidget::TutteParam(TutteParamType type)
 {
-	using mat = Eigen::MatrixXd;
 	using acamcad::polymesh::MVert;
 	std::cout << "Tutte's Parameterization\n";
 
@@ -419,19 +428,19 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 	//auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_SQUARE);
 	//auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_PENTAGON);
 
-	// 2. prepare matrix (Eigen::Dense)
-	mat A = mat::Zero(N, N);
-	mat x = mat::Zero(N, 2);
-	mat b = mat::Zero(N, 2);
+	// 2. prepare matrix (Eigen::Sparse)
+	Eigen::SparseMatrix<double> A(N, N);	A.setZero();
+	Eigen::SparseMatrix<double> x(N, 2);	x.setZero();
+	Eigen::SparseMatrix<double> b(N, 2);	b.setZero();
 
 	// a) boundary vertices
 	for (int i = 0; i < M; ++i)
 	{
 		int vertID = boundaryVertLists[i]->index();
 
-		A(vertID, vertID) = 1.0;
-		b(vertID, 0) = boundaryUVs[i].x;
-		b(vertID, 1) = boundaryUVs[i].y;
+		A.insert(vertID, vertID) = 1.0;
+		b.insert(vertID, 0) = boundaryUVs[i].x;
+		b.insert(vertID, 1) = boundaryUVs[i].y;
 	}
 
 	// b) inner vertices
@@ -447,15 +456,16 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 		auto adjVerts = polyMesh->vertAdjacentVertices(pVert);
 		auto weights = CalAdjectWeight(pVert, adjVerts, type);
 		double weightSUM = std::accumulate(weights.begin(), weights.end(), 0.0);
-		for (int j = 0; j < adjVerts.size(); ++j) {
-			auto adjID = adjVerts[j]->index();
-			A(vID, adjID) = weights[j];
-			A(vID, vID) = -weightSUM;
-		}
+		for (int j = 0; j < adjVerts.size(); ++j)
+			A.insert(vID, adjVerts[j]->index()) = weights[j];
+		A.insert(vID, vID) = -weightSUM;
 	}
 
 	/// 3. solve the equation Ax = b
-	x = A.lu().solve(b);
+	Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+	solver.analyzePattern(A);
+	solver.factorize(A);
+	x = solver.solve(b);
 
 	std::cout << "Tutte's parameterization finished, updating mesh...\n";
 
@@ -465,12 +475,40 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 		auto vID = pVert->index();
 	
 		// TODO : Better to add a function to set vertex position
-		//pVert->setPosition(x(vID, 0), x(vID, 1), 0.0);
-		pVert->setTexture(x(vID, 0), x(vID, 1));
+		//pVert->setPosition(x.coeff(vID, 0), x.coeff(vID, 1), 0.0);
+		pVert->setTexture(x.coeff(vID, 0), x.coeff(vID, 1));
 	}
+
+	isParameterized = true;
 
 	std::cout << "Done\n";
 
+	UpdateMesh();
+	update();
+}
+
+void MeshViewerWidget::ProjNewtonSolver()
+{
+	if (polyMesh->numVertices() == 0)
+	{
+		std::cerr << "ERROR: ProjNewtonSolver() No vertices!" << std::endl;
+		return;
+	}
+
+	if (!isParameterized)
+	{
+		std::cout << "The mesh hasn't been parameterized yet, run with Tutte's Embedding...\n";
+		this->TutteParam(TutteParamType::AVERAGE_WEIGHTED);
+	}
+
+	// now we've got methods
+	if (!isProjNewtonSolver)
+	{
+		m_ProjNewtonSolver.PresetMeshUV(polyMesh);
+		isProjNewtonSolver = true;
+	}
+
+	while (m_ProjNewtonSolver.UpdateMeshUV(polyMesh));
 	UpdateMesh();
 	update();
 }

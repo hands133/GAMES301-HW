@@ -3,6 +3,8 @@
 #include "QGLViewerWidget.h"
 #include "../PolyMesh/include/PolyMesh/IOManager.h"
 
+#include "EnergyEigensystems\Util_EnergyEigensystems.h"
+
 class MeshViewerWidget : public QGLViewerWidget
 {
 	Q_OBJECT
@@ -26,6 +28,8 @@ public:
 	enum class TutteParamType { AVERAGE_WEIGHTED, FLOATER_WEIGHTED };
 	// ============ hw1: parameterization function entrance ============
 	void TutteParam(TutteParamType type);
+	void ProjNewtonSolver();
+
 
 signals:
 	void LoadMeshOKSignal(bool, QString);
@@ -62,4 +66,10 @@ protected:
 	bool isTwoSideLighting;
 	bool isDrawBoundingBox;
 	bool isDrawBoundary;
+
+	// ============ hw2: Project Newton Method member ============
+	bool isParameterized = false;
+	bool isProjNewtonSolver = false;
+
+	eigensys::ProjectNewtonSolver m_ProjNewtonSolver;
 };

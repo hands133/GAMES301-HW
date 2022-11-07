@@ -50,6 +50,9 @@ private:
 	QAction* actParamAverage;
 	QAction* actParamFloater;
 
+	// ============ hw2: Actions ============
+	QAction* actProjNewtonSolver;
+
 	// Help Actions.
 	QAction *actAbout;
 

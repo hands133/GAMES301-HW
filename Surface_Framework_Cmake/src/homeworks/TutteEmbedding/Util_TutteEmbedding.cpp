@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <numeric>
 
-#include <Eigen3\Eigen>
+#include <Eigen\Eigen>
 
 namespace tutte
 {
@@ -97,7 +97,6 @@ namespace tutte
 	{
 		int N = neighborAngleInfo.size();
 
-		glm::dvec2 P(0.0, 0.0);
 		std::vector<glm::dvec2> adjUVs(N, { 0.0, 0.0 });
 		adjUVs[0] = { neighborAngleInfo[0].x, 0.0 };
 
@@ -111,7 +110,6 @@ namespace tutte
 
 			// 2. scale factor
 			double scale = neighborAngleInfo[j].x / neighborAngleInfo[j - 1].x;
-			double dP = scale * glm::sqrt(glm::dot(adjUVs[j - 1] - P, adjUVs[j - 1] - P));
 			glm::dmat2x2 scaleMat2({ scale, 0.0 }, { 0.0, scale });
 
 			adjUVs[j] = scaleMat2 * rotateMat2 * adjUVs[j - 1];
@@ -175,8 +173,6 @@ namespace tutte
 				mu_ls[Pr - adjUVs.begin()] += x(1);
 				mu_ls[Pn - adjUVs.begin()] += x(2);
 				mu_ls[i] += x(0, 0);
-
-				assert(!std::isnan(x(0) * x(1) * x(2)));
 
 				IterAscend();
 			}
