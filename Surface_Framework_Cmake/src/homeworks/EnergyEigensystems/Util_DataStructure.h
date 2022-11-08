@@ -35,19 +35,14 @@ namespace eigensys
 	struct QPW_Decomposition
 	{
 		void CalculateSVDnPolar(const Eigen::Matrix2d& F);
-		Eigen::Matrix2d U, Sigma, V;	// { U, Sigma, V } = SVD(F)
-		Eigen::Matrix2d S, R;			// polar decomposition
-	};
-
-	struct QPW_DeformGradient
-	{
-		void CalculateDeformGradient(const Eigen::Matrix2d& Ds, const Eigen::Matrix2d& DmInv);
-		Eigen::Matrix2d F{ Eigen::Matrix2d::Identity() };	// deformation gradient F
+		Eigen::Vector2d sigma;	// { U, Sigma, V } = SVD(F)
+		Eigen::Matrix2d U, V;
+		Eigen::Matrix2d S, R;	// polar decomposition
 	};
 
 	struct QPW_DeformVectors
 	{
-		void CalculateVectors(const Eigen::Matrix2d& F, const QPW_Decomposition& decomp);
+		QPW_DeformVectors(const Eigen::Matrix2d& F, const QPW_Decomposition& decomp);
 
 		Eigen::Vector4d f{ Eigen::Vector4d::Zero() };		// vec(F)
 		Eigen::Vector4d g{ Eigen::Vector4d::Zero() };		// vec(R)
@@ -67,47 +62,39 @@ namespace eigensys
 
 	struct QPW_EigenSystem2D
 	{
-		std::array<QPW_EigenValVecPair, 4> valvecpairs;
+		QPW_EigenSystem2D(const QPW_Cell& cell, const QPW_DeformVectors& defvecs);
+		std::array<QPW_EigenSystem2D, 4> pairs;
 	};
 
-	// global Energy Gradient
-	//struct EnergySD_2DGradient
-	//{
-	//	Eigen::MatrixXd operator()(
-	//		acamcad::polymesh::PolyMesh* mesh,
-	//		const Eigen::VectorXd& UVs,
-	//		std::vector<QPW_DataPack>& packs);
-
-	//	Eigen::MatrixXd operator()(
-	//		acamcad::polymesh::PolyMesh* mesh,
-	//		const Eigen::VectorXd& UVs,
-	//		const std::vector<Eigen::Matrix2>& DmList);
-	//};
-
 	// F Dm = Ds
-	//class QPW_DataPack
-	//{
-	//	friend struct QPW_EnergySD_2D;
-	//	friend class ProjectNewtonSolver;
-	//public:
-	//	QPW_DataPack(const Eigen::Matrix2d& Dm);
+	class QPW_Cell
+	{
+		friend struct QPW_EigenSystem2D;
 
-	//	void CalculatepF_pDs(const Eigen::Matrix2d& Ds);
+	public:
+		using vec6d = Eigen::Vector<double, 6>;
+		using mat6d = Eigen::Matrix<double, 6, 6>;
 
-	//	// call CalculateGradient ahead!
-	//	Eigen::Matrix<double, 4, 6> GetLocalpfq_pxq() const { return pfq_pxq; }
-	//	Eigen::MatrixXd GetGlobalpf_px(acamcad::polymesh::PolyMesh* mesh, size_t faceID) const;
+		QPW_Cell(const Eigen::Matrix2d& dm);
 
-	//private:
-	//	void Calculatepfq_pxq(const Eigen::Matrix2d& DmInv);
+		double GetVolumeWeight() const { return Dm.determinant() / 2.0; }
+		Eigen::Matrix<double, 4, 6> GetDeformGradDerivative() const { return pfq_pxq; }
 
-	//private:
-	//	Eigen::Matrix2d DmINV;	// F = Ds / Dm
-	//	Eigen::Matrix<double, 4, 6> pfq_pxq{ Eigen::Matrix<double, 4, 6>::Zero() };	// pf / px per quad-point
+		std::pair<vec6d, mat6d> GetGradNHess(const Eigen::Matrix2d& Ds);
+		double GetEnergy(const Eigen::Matrix2d& Ds) const;
+		double GetLastEnergy() const { return CalculateEnergy(m_Invariables); }
 
-	//	QPW_DeformGradient	m_DeformGradient;
-	//	QPW_Decomposition	m_Decomposition;
-	//	QPW_Invariables		m_Invariables;
-	//	QPW_DeformVectors	m_DeformVectors;
-	//};
+	private:
+		double CalculateEnergy(const QPW_Invariables& invars) const;
+		QPW_DeformVectors CalculateVars(const Eigen::Matrix2d& F);
+		Eigen::Vector4d CalculateEnergyDeformGrad(const QPW_Invariables& invars, const QPW_DeformVectors& defvecs) const;
+		Eigen::Matrix4d CalculateEnergyDeformHess(const QPW_EigenSystem2D& eigensys) const;
+
+	private:
+		Eigen::Matrix2d Dm;	// F = Ds / Dm
+		Eigen::Matrix<double, 4, 6> pfq_pxq{ Eigen::Matrix<double, 4, 6>::Zero() };	// pf / px per quad-point
+
+		QPW_Decomposition	m_Decomposition;
+		QPW_Invariables		m_Invariables;
+	};
 }

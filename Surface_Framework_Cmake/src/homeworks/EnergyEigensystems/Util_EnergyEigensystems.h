@@ -39,7 +39,6 @@ namespace eigensys
 		std::tuple<Eigen::Vector<double, 6>, Eigen::Matrix<double, 6, 6>> QPW_CalculateEnergyDerivative(acamcad::polymesh::PolyMesh* mesh, const Eigen::Matrix2d& Dm, const Eigen::Matrix2d& Ds);
 
 		// eigen-related function
-		
 
 	private:
 		std::vector<Eigen::Matrix2d> m_DmList;

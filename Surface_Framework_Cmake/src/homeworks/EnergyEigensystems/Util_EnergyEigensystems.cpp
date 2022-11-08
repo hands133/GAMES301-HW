@@ -133,13 +133,6 @@ namespace eigensys
 		return true;
 	}
 
-	//Eigen::Matrix4d ProjectNewtonSolver::Calculatep2PSIq_pfq2(const QPW_EigenSystem2D& eigensys) const
-	//{
-	//	return std::accumulate(eigensys.valvecpairs.begin(), eigensys.valvecpairs.end(), Eigen::Matrix4d{ Eigen::Matrix4d::Zero() },
-	//		[](Eigen::Matrix4d sum, const QPW_EigenValVecPair& pair)
-	//		{	return sum + std::max(pair.l, 0.0) * (pair.e * pair.e.transpose());	});
-	//}
-
 	//// for debug, equal to sum(max(lambda, 0) ei eiT)
 	//Eigen::Matrix4d ProjectNewtonSolver::CalculateHqAnother(const QPW_pfq_pxq& pfq_pxq) const
 	//{
@@ -156,22 +149,6 @@ namespace eigensys
 	//		defvecs.g * defvecs.f.transpose() + defvecs.f * defvecs.g.transpose());
 
 	//	return P1 + P2 + P3;
-	//}
-
-	//Eigen::Vector4d ProjectNewtonSolver::CalculatepPSIq_pfq(const QPW_DataPack& pack)
-	//{
-	//	const auto& defvecs = pack.m_DeformVectors;
-	//	const auto& invar = pack.m_Invariables;
-
-	//	double pPSI_pI[3] = { 0.0,												// pPSI / pI1 = 0
-	//						(1.0 + 1.0 / (invar.I3 * invar.I3)) / 2.0,			// pPSI / pI2 = (1 + 1 / I3^2) / 2
-	//						- invar.I2 / (invar.I3 * invar.I3 * invar.I3) };	// pPSI / pI3 = -I2 / I3^3
-	//		
-	//	Eigen::Vector4d pI_pFq[3] = { defvecs.r,		// pI1 / pfq = r
-	//								  defvecs.f * 2.0,	// pI2 / pfq = 2f
-	//								  defvecs.g };		// pI3 / pfq = g
-	//		
-	//	return std::inner_product(pPSI_pI, pPSI_pI + 3, pI_pFq, Eigen::Vector4d{ Eigen::Vector4d::Zero() });
 	//}
 
 	std::pair<double, Eigen::VectorXd> ProjectNewtonSolver::Line_Search(
