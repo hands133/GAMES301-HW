@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <array>
 
 #include <Eigen\Dense>
 
@@ -8,7 +8,6 @@
 
 namespace eigensys
 {
-	// axuliary functions
 	inline Eigen::Vector4d opVEC(const Eigen::Matrix2d& M)
 	{
 		return Eigen::Vector4d{ M(0, 0), M(1, 0), M(0, 1), M(1, 1) };
@@ -26,7 +25,6 @@ namespace eigensys
 	struct QPW_Invariables
 	{
 		void CalculateInvariants(const Eigen::Matrix2d& S);
-		// Initialized with unit matrix S
 		double I1{ 2.0 };	// I1 = sum(sigma_i)
 		double I2{ 2.0 };	// I2 = sum(sigma_i^2)
 		double I3{ 1.0 };	// I3 = prod(sigma_i)
@@ -54,19 +52,7 @@ namespace eigensys
 		Eigen::Vector4d d2{ Eigen::Vector4d::Zero() };		// vec(U {0  1} VT)
 	};
 
-	struct QPW_EigenValVecPair
-	{
-		double l{ 0.0 };
-		Eigen::Vector4d e{ Eigen::Vector4d::Zero() };
-	};
-
-	struct QPW_EigenSystem2D
-	{
-		QPW_EigenSystem2D(const QPW_Cell& cell, const QPW_DeformVectors& defvecs);
-		std::array<QPW_EigenSystem2D, 4> pairs;
-	};
-
-	// F Dm = Ds
+	// cell, storing Dm and pFq_pfq
 	class QPW_Cell
 	{
 		friend struct QPW_EigenSystem2D;
@@ -80,8 +66,8 @@ namespace eigensys
 		double GetVolumeWeight() const { return Dm.determinant() / 2.0; }
 		Eigen::Matrix<double, 4, 6> GetDeformGradDerivative() const { return pfq_pxq; }
 
-		std::pair<vec6d, mat6d> GetGradNHess(const Eigen::Matrix2d& Ds);
-		double GetEnergy(const Eigen::Matrix2d& Ds) const;
+		std::pair<vec6d, mat6d> CalculateGradNHess(const Eigen::Matrix2d& Ds);
+		double CalculateEnergy(const Eigen::Matrix2d& Ds);
 		double GetLastEnergy() const { return CalculateEnergy(m_Invariables); }
 
 	private:
@@ -96,5 +82,18 @@ namespace eigensys
 
 		QPW_Decomposition	m_Decomposition;
 		QPW_Invariables		m_Invariables;
+	};
+
+	// eigen system
+	struct QPW_EigenValVecPair
+	{
+		double l{ 0.0 };
+		Eigen::Vector4d e{ Eigen::Vector4d::Zero() };
+	};
+
+	struct QPW_EigenSystem2D
+	{
+		QPW_EigenSystem2D(const QPW_Cell& cell, const QPW_DeformVectors& defvecs);
+		std::array<QPW_EigenValVecPair, 4> pairs;
 	};
 }

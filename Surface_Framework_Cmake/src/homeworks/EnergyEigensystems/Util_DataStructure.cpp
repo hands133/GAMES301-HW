@@ -20,7 +20,7 @@ namespace eigensys
 		SVD.computeV();
 		U = SVD.matrixU();
 		V = SVD.matrixV();
-		Sigma = SVD.singularValues();
+		sigma = SVD.singularValues();
 
 		Eigen::Matrix2d L = Eigen::Matrix2d::Identity();
 		if ((U * V.transpose()).determinant() < 0)	L(1, 1) = -1;
@@ -45,13 +45,13 @@ namespace eigensys
 		flip << 0, 1, 1, 0;
 
 		auto& U = decomp.U;
-		auto& SI = decomp.Sigma;
+		auto& sigma = decomp.sigma;
 		auto& VT = decomp.V.transpose();
 
 		double sqrt2 = std::sqrt(2.0);
 
 		//Eigen::Matrix2d G = twist * F * twist.transpose();
-		Eigen::Matrix2d G = U * SI.diagonal().reverse().asDiagonal() * VT;
+		Eigen::Matrix2d G = U * sigma.reverse().asDiagonal() * VT;
 		Eigen::Matrix2d T = U * twist * VT / sqrt2;
 		Eigen::Matrix2d P = U * Eigen::Vector2d(1, -1).asDiagonal() * VT / sqrt2;
 		Eigen::Matrix2d L = U * flip * VT / sqrt2;
@@ -79,10 +79,10 @@ namespace eigensys
 		pairs[1].l = 1 + 3 / std::pow(decomp.sigma(1), 4.0);
 		pairs[1].e = defvecs.d2;
 		
-		pairs[2].l = 1 + 1 / std::pow(invar.I3, 2.0) + invar.I2 / std::pow(I3, 3.0);
+		pairs[2].l = 1 + 1 / std::pow(invar.I3, 2.0) + invar.I2 / std::pow(invar.I3, 3.0);
 		pairs[2].e = defvecs.l;
 
-		pairs[3].l = 1 + 1 / std::pow(invar.I3, 2.0) - invar.I2 / std::pow(I3, 3.0);
+		pairs[3].l = 1 + 1 / std::pow(invar.I3, 2.0) - invar.I2 / std::pow(invar.I3, 3.0);
 		pairs[3].e = defvecs.t;
 	}
 }
@@ -109,13 +109,13 @@ namespace eigensys
 				   0.0, -s2, 0.0,    v, 0.0,   t;
 	}
 
-	std::pair<vec6d, mat6d> QPW_Cell::GetGradNHess(const Eigen::Matrix2d& Ds)
+	std::pair<QPW_Cell::vec6d, QPW_Cell::mat6d> QPW_Cell::CalculateGradNHess(const Eigen::Matrix2d& Ds)
 	{
 		// volume weight
 		double volumeWeight = GetVolumeWeight();
 
 		// 1. Prepare F
-		F = Ds * Dm.inverse();
+		Eigen::Matrix2d F = Ds * Dm.inverse();
 		
 		// 2. Variables (decomposition, invariables, vectors)
 		auto defvecs = CalculateVars(F);
@@ -125,22 +125,23 @@ namespace eigensys
 		vec6d GRAD = volumeWeight * pfq_pxq.transpose() * pPSIq_pfq;
 
 		// 4. energy-deform hessian
-		auto p2PSIq_pfq2 = CalculateEnergyDeformHess(m_Decomposition, m_Invariables, defvecs);
+		QPW_EigenSystem2D eigensys(*this, defvecs);
+		auto p2PSIq_pfq2 = CalculateEnergyDeformHess(eigensys);
 		mat6d HESS = volumeWeight * pfq_pxq.transpose() * p2PSIq_pfq2 * pfq_pxq;
 
 		return std::make_pair(GRAD, HESS);
 	}
 
-	double QPW_Cell::GetEnergy(const Eigen::Matrix2d& Ds) const
+	double QPW_Cell::CalculateEnergy(const Eigen::Matrix2d& Ds)
 	{
 		// 1. Prepare F
-		F = Ds * Dm.inverse();
+		Eigen::Matrix2d F = Ds * Dm.inverse();
 
 		// 2. Variables (decomposition, invariables)
 		CalculateVars(F);
 
 		// 3. energy
-		return volumeWeight * CalculateEnergy(m_Invariables);
+		return GetVolumeWeight() * CalculateEnergy(m_Invariables);
 	}
 
 	double QPW_Cell::CalculateEnergy(const QPW_Invariables& invars) const
@@ -159,11 +160,10 @@ namespace eigensys
 	{
 		Eigen::Vector4d pPSIq_pfq = Eigen::Vector4d::Zero();
 
-		const auto& defvecs = m_DeformVectors;
 		const auto& invar = m_Invariables;
 
 		double pPSI_pIs[3] = { 0.0,												// pPSI / pI1 = 0
-							   (1.0 + 1.0 / std::pow(invar.I3, 2.0) / 2.0,		// pPSI / pI2 = (1 + 1 / I3^2) / 2
+							   (1.0 + 1.0 / std::pow(invar.I3, 2.0)) / 2.0,		// pPSI / pI2 = (1 + 1 / I3^2) / 2
 							   - invar.I2 / std::pow(invar.I3, 3.0) };			// pPSI / pI3 = -I2 / I3^3
 				
 		Eigen::Vector4d pI_pFqs[3] = { defvecs.r,								// pI1 / pfq = r

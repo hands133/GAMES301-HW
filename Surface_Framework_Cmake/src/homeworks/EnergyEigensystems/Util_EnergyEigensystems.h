@@ -2,13 +2,13 @@
 
 #include <tuple>
 #include <vector>
-#include <functional>
-#include <Eigen\Dense>
-#include <Eigen\Sparse>
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
-#include <TinyAD\Scalar.hh>
+#include <Eigen/SparseLU>
 
 #include "../PolyMesh/include/PolyMesh/PolyMesh.h"
+
 #include "Util_DataStructure.h"
 
 // 2D, Symmetric Dirichlet Energy Only
@@ -17,6 +17,7 @@ namespace eigensys
 	class ProjectNewtonSolver
 	{
 	public:
+		ProjectNewtonSolver();
 		void PresetMeshUV(acamcad::polymesh::PolyMesh* mesh, const Eigen::SparseMatrix<double>& UVmat);
 		bool UpdateMeshUV(acamcad::polymesh::PolyMesh* mesh);
 
@@ -27,26 +28,29 @@ namespace eigensys
 			acamcad::polymesh::PolyMesh* mesh,
 			const Eigen::VectorXd& d,
 			const Eigen::VectorXd& grad,
-			const Eigen::VectorXd& UVs,
 			double lastEnergy,
-			double gamma, double c);
+			double gamma, double c, double a0);
 
 		// procedure function
-		double CalculateEnergySD_2D(acamcad::polymesh::PolyMesh* polymesh, const Eigen::VectorXd& UVs) const;
-		double QPW_CalculateEnergySD_2D(const Eigen::Matrix2d& DmINV, const Eigen::Matrix2d& Ds) const;
-
+		double CalculateEnergySD_2D(acamcad::polymesh::PolyMesh* mesh, const Eigen::VectorXd& UVs) const;
 		std::tuple<Eigen::VectorXd, Eigen::SparseMatrix<double>> CalculateEnergyDerivative(acamcad::polymesh::PolyMesh* mesh, const Eigen::VectorXd& UVs);
-		std::tuple<Eigen::Vector<double, 6>, Eigen::Matrix<double, 6, 6>> QPW_CalculateEnergyDerivative(acamcad::polymesh::PolyMesh* mesh, const Eigen::Matrix2d& Dm, const Eigen::Matrix2d& Ds);
 
-		// eigen-related function
+		double CalculateNoFlipoverStep(acamcad::polymesh::PolyMesh* mesh, const Eigen::VectorXd& grad) const;
 
 	private:
-		std::vector<Eigen::Matrix2d> m_DmList;
+		// data meber
+		std::vector<QPW_Cell> m_CellList;
 		Eigen::VectorXd m_UVList;
 
-		size_t m_Iters = 0;
-		double m_Energy = 0.0;
+		// statistics
+		size_t m_Iters{ 0 };
+		double m_Energy{ 0.0 };
 
-		bool m_FirstUpdate = true;
+		// utility
+		Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> m_LDLTSolver;
+		Eigen::SparseLU<Eigen::SparseMatrix<double>> m_LUSolver;
+
+		// control
+		bool m_FirstUpdate{ true };
 	};
 }
