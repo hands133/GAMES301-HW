@@ -52,7 +52,6 @@ namespace eigensys
 
 		// utility
 		Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> m_LDLTSolver;
-		Eigen::SparseLU<Eigen::SparseMatrix<double>> m_LUSolver;
 
 		// control
 		bool m_FirstUpdate{ true };

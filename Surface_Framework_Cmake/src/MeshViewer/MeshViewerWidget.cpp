@@ -517,7 +517,6 @@ void MeshViewerWidget::ProjNewtonSolver()
 		isParameterized = true;
 	}
 
-	// now we've got methods
 	if (!isProjNewtonSolver)
 	{
 		m_ProjNewtonSolver.PresetMeshUV(polyMesh, paramUVs);
