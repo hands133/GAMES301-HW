@@ -329,7 +329,7 @@ void MeshViewerWidget::DrawSmooth() const
 		{
 			glNormal3dv(fvh->normal().data());
 			auto uv = fvh->getTextureUVW().uv;
-			float uvScale = 10.0f;
+			float uvScale = 5.0f;
 			glTexCoord2f(uv[0] * uvScale, uv[1] * uvScale);
 			glVertex3dv(fvh->position().data());
 		}
@@ -409,6 +409,9 @@ std::vector<double> MeshViewerWidget::CalAdjectWeight(acamcad::polymesh::MVert* 
 
 Eigen::SparseMatrix<double> MeshViewerWidget::TutteParam(TutteParamType type)
 {
+	// time
+	auto timeStart = std::chrono::steady_clock::now();
+
 	using acamcad::polymesh::MVert;
 	std::cout << "Tutte's Parameterization\n";
 
@@ -472,7 +475,10 @@ Eigen::SparseMatrix<double> MeshViewerWidget::TutteParam(TutteParamType type)
 	solver.factorize(A);
 	x = solver.solve(b);
 
-	std::cout << "Tutte's parameterization finished, updating mesh...\n";
+	auto timeEnd = std::chrono::steady_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
+
+	std::cout << "Tutte's parameterization finished with " << ms << "ms, updating mesh...\n";
 
 	for (int i = 0; i < N; ++i)
 	{
@@ -518,7 +524,16 @@ void MeshViewerWidget::ProjNewtonSolver()
 		isProjNewtonSolver = true;
 	}
 
+	auto timeStart = std::chrono::steady_clock::now();
+
 	while (m_ProjNewtonSolver.UpdateMeshUV(polyMesh));
+
+	auto timeEnd = std::chrono::steady_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
+
+	std::cout << "Project Newton Solver finished with " << ms << " ms\n";
+
+	m_ProjNewtonSolver.SaveEnergies("energies.txt");
 
 	isProjNewtonSolver = false;
 

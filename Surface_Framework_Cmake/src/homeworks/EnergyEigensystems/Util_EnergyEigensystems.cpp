@@ -2,6 +2,7 @@
 
 #include <numeric>
 #include <algorithm>
+#include <fstream>
 
 namespace eigensys
 {
@@ -38,6 +39,8 @@ namespace eigensys
 	ProjectNewtonSolver::ProjectNewtonSolver()
 	{
 		m_UVList.setZero();
+
+		m_EnergyRecord.reserve(1000);
 
 		m_LDLTSolver.setShift(std::numeric_limits<float>::epsilon());	// necessary
 	}
@@ -90,6 +93,8 @@ namespace eigensys
 			Dm << P1 - P0, P2 - P0;
 			m_CellList.emplace_back(Dm);
 		}
+
+		m_EnergyRecord.clear();
 	}
 
 	// Please make sure that the UV point are stored in the texture coordinate
@@ -120,6 +125,7 @@ namespace eigensys
 		if (m_FirstUpdate)
 		{
 			m_Energy = CalculateEnergySD_2D(mesh, m_UVList);
+			m_EnergyRecord.emplace_back(m_Energy);
 			m_FirstUpdate = false;
 		}
 
@@ -130,6 +136,7 @@ namespace eigensys
 		std::cout << "A = " << step << "\t";
 
 		auto [energy, updatedUV] = Line_Search(mesh, d, G, m_Energy, 0.8, 1.0e-4, std::min(step * 0.99, 1.0));
+		m_EnergyRecord.emplace_back(energy);
 
 		m_Energy = energy;
 		m_UVList = updatedUV;
@@ -137,6 +144,20 @@ namespace eigensys
 		ConstrainUV(mesh, updatedUV);
 
 		return true;
+	}
+
+	void ProjectNewtonSolver::SaveEnergies(const std::filesystem::path& filePath) const
+	{
+		std::ofstream file(filePath);
+		if (!file.is_open()) {
+			file.close();
+			assert(false, "file open error!");
+		}
+
+		for (double energy : m_EnergyRecord)
+			file << energy << ", ";
+
+		file.close();
 	}
 
 	std::pair<double, Eigen::VectorXd> ProjectNewtonSolver::Line_Search(
