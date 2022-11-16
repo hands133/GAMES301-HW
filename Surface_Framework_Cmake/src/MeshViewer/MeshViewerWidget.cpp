@@ -428,17 +428,20 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 	Eigen::SparseMatrix<double> x(N, 2);	x.setZero();
 	Eigen::SparseMatrix<double> b(N, 2);	b.setZero();
 
-	std::vector<Eigen::Triplet<double>> memberTriplets;
-	memberTriplets.reserve(N * 6);
+	std::vector<Eigen::Triplet<double>> ATriplets;
+	ATriplets.reserve(N * 6);
+
+	std::vector<Eigen::Triplet<double>> bTriplets;
+	bTriplets.reserve(N);
 
 	// a) boundary vertices
 	for (int i = 0; i < M; ++i)
 	{
 		int vertID = boundaryVertLists[i]->index();
 
-		memberTriplets.emplace_back(vertID, vertID, 1.0);
-		b.insert(vertID, 0) = boundaryUVs[i].x;
-		b.insert(vertID, 1) = boundaryUVs[i].y;
+		ATriplets.emplace_back(vertID, vertID, 1.0);
+		bTriplets.emplace_back(vertID, 0, boundaryUVs[i].x());
+		bTriplets.emplace_back(vertID, 1, boundaryUVs[i].y());
 	}
 
 	// b) inner vertices
@@ -456,11 +459,12 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 		double weightSUM = std::accumulate(weights.begin(), weights.end(), 0.0);
 
 		for (int j = 0; j < adjVerts.size(); ++j)
-			memberTriplets.emplace_back(vID, adjVerts[j]->index(), weights[j]);
-		memberTriplets.emplace_back(vID, vID, -weightSUM);
+			ATriplets.emplace_back(vID, adjVerts[j]->index(), weights[j]);
+		ATriplets.emplace_back(vID, vID, -weightSUM);
 	}
 
-	A.setFromTriplets(memberTriplets.begin(), memberTriplets.end());
+	A.setFromTriplets(ATriplets.begin(), ATriplets.end());
+	b.setFromTriplets(bTriplets.begin(), bTriplets.end());
 
 	/// 3. solve the equation Ax = b
 	Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
