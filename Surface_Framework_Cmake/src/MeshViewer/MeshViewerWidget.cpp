@@ -3,7 +3,8 @@
 
 #include <tuple>
 #include <Eigen3\Dense>
-#include <glm\glm.hpp>
+#include <Eigen3\Sparse>
+#include <Eigen3\SparseLU>
 
 #include "TutteEmbedding\Util_TutteEmbedding.h"
 
@@ -393,9 +394,12 @@ std::vector<double> MeshViewerWidget::CalAdjectWeight(acamcad::polymesh::MVert* 
 }
 
 // ============ hw1: Tutte Embedding entrance ============
+
 void MeshViewerWidget::TutteParam(TutteParamType type)
 {
-	using mat = Eigen::MatrixXd;
+	// time
+	auto timeStart = std::chrono::steady_clock::now();
+
 	using acamcad::polymesh::MVert;
 	std::cout << "Tutte's Parameterization\n";
 
@@ -419,19 +423,22 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 	//auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_SQUARE);
 	//auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_PENTAGON);
 
-	// 2. prepare matrix (Eigen::Dense)
-	mat A = mat::Zero(N, N);
-	mat x = mat::Zero(N, 2);
-	mat b = mat::Zero(N, 2);
+	// 2. prepare matrix (Eigen::Sparse)
+	Eigen::SparseMatrix<double> A(N, N);	A.setZero();
+	Eigen::SparseMatrix<double> x(N, 2);	x.setZero();
+	Eigen::SparseMatrix<double> b(N, 2);	b.setZero();
+
+	std::vector<Eigen::Triplet<double>> memberTriplets;
+	memberTriplets.reserve(N * 6);
 
 	// a) boundary vertices
 	for (int i = 0; i < M; ++i)
 	{
 		int vertID = boundaryVertLists[i]->index();
 
-		A(vertID, vertID) = 1.0;
-		b(vertID, 0) = boundaryUVs[i].x;
-		b(vertID, 1) = boundaryUVs[i].y;
+		memberTriplets.emplace_back(vertID, vertID, 1.0);
+		b.insert(vertID, 0) = boundaryUVs[i].x;
+		b.insert(vertID, 1) = boundaryUVs[i].y;
 	}
 
 	// b) inner vertices
@@ -447,26 +454,32 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 		auto adjVerts = polyMesh->vertAdjacentVertices(pVert);
 		auto weights = CalAdjectWeight(pVert, adjVerts, type);
 		double weightSUM = std::accumulate(weights.begin(), weights.end(), 0.0);
-		for (int j = 0; j < adjVerts.size(); ++j) {
-			auto adjID = adjVerts[j]->index();
-			A(vID, adjID) = weights[j];
-			A(vID, vID) = -weightSUM;
-		}
+
+		for (int j = 0; j < adjVerts.size(); ++j)
+			memberTriplets.emplace_back(vID, adjVerts[j]->index(), weights[j]);
+		memberTriplets.emplace_back(vID, vID, -weightSUM);
 	}
 
-	/// 3. solve the equation Ax = b
-	x = A.lu().solve(b);
+	A.setFromTriplets(memberTriplets.begin(), memberTriplets.end());
 
-	std::cout << "Tutte's parameterization finished, updating mesh...\n";
+	/// 3. solve the equation Ax = b
+	Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+	solver.compute(A);
+	x = solver.solve(b);
+
+	auto timeEnd = std::chrono::steady_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
+
+	std::cout << "Tutte's parameterization finished with " << ms << "ms, updating mesh...\n";
 
 	for (int i = 0; i < N; ++i)
 	{
 		auto pVert = polyMesh->vert(i);
 		auto vID = pVert->index();
-	
+
 		// TODO : Better to add a function to set vertex position
-		//pVert->setPosition(x(vID, 0), x(vID, 1), 0.0);
-		pVert->setTexture(x(vID, 0), x(vID, 1));
+		pVert->setPosition(x.coeff(vID, 0), x.coeff(vID, 1), 0.0);
+		pVert->setTexture(x.coeff(vID, 0), x.coeff(vID, 1));
 	}
 
 	std::cout << "Done\n";
