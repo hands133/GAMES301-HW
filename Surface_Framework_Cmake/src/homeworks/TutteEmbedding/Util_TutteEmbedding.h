@@ -1,6 +1,6 @@
 #include <vector>
 
-#include <Eigen3\Dense>
+#include <Eigen\Dense>
 
 #include "../PolyMesh/include/PolyMesh/PolyMesh.h"
 

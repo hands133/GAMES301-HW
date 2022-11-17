@@ -2,9 +2,9 @@
 #include "MeshViewerWidget.h"
 
 #include <tuple>
-#include <Eigen3\Dense>
-#include <Eigen3\Sparse>
-#include <Eigen3\SparseLU>
+#include <Eigen\Dense>
+#include <Eigen\Sparse>
+#include <Eigen\SparseLU>
 
 #include "TutteEmbedding\Util_TutteEmbedding.h"
 
@@ -482,7 +482,7 @@ void MeshViewerWidget::TutteParam(TutteParamType type)
 		auto vID = pVert->index();
 
 		// TODO : Better to add a function to set vertex position
-		pVert->setPosition(x.coeff(vID, 0), x.coeff(vID, 1), 0.0);
+		//pVert->setPosition(x.coeff(vID, 0), x.coeff(vID, 1), 0.0);
 		pVert->setTexture(x.coeff(vID, 0), x.coeff(vID, 1));
 	}
 

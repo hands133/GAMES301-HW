@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <numeric>
 
-#include <Eigen3\Eigen>
+#include <Eigen\Eigen>
 
 namespace tutte
 {
