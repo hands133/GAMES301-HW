@@ -32,7 +32,7 @@ namespace eigensys
 			float UVx = static_cast<float>((UVs(2 * vertID + 0) - xmin) / (xmax - xmin));
 			float UVy = static_cast<float>((UVs(2 * vertID + 1) - ymin) / (ymax - ymin));
 			vert->setTexture(UVx, UVy, 0.0);
-			vert->setPosition(UVx, UVy, 0.0);
+			//vert->setPosition(UVx, UVy, 0.0);
 		}
 	}
 

@@ -114,7 +114,6 @@ target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::OpenG
 
 target_include_directories(${PROJECT_NAME}
 PUBLIC "3rdparty/Eigen" # add Eigen
-PUBLIC "3rdparty/glm"   # add glm
 PUBLIC "src/homeworks"  # add self-include dir
 PUBLIC "3rdparty/TinyAD/include"
 )

@@ -1,5 +1,6 @@
 #include <vector>
-#include <glm\glm.hpp>
+
+#include <Eigen\Dense>
 
 #include "../PolyMesh/include/PolyMesh/PolyMesh.h"
 
@@ -15,14 +16,14 @@ namespace tutte
 		// POLYGON_CROSS
 	};
 
-	std::vector<glm::dvec2> GetBoundaryUVs(size_t numVerts, UVBoundaryType type);
+	std::vector<Eigen::Vector2d> GetBoundaryUVs(size_t numVerts, UVBoundaryType type);
 
-	bool IsOinTriangle(glm::dvec2 P1, glm::dvec2 P2, glm::dvec2 P3);
+	bool IsOinTriangle(Eigen::Vector2d P1, Eigen::Vector2d P2, Eigen::Vector2d P3);
 
 	auto FloaterParam_I_a(acamcad::polymesh::MVert* v,
 		const std::vector<acamcad::polymesh::MVert*>& adjVerts);
-	auto FloaterParam_I_b(double thetaSum, const std::vector<glm::dvec2>& neighborAngleInfo);
-	auto FloaterParam_II(const std::vector<glm::dvec2>& adjUVs);
+	auto FloaterParam_I_b(double thetaSum, const std::vector<Eigen::Vector2d>& neighborAngleInfo);
+	auto FloaterParam_II(const std::vector<Eigen::Vector2d>& adjUVs);
 
 	void AverageParam(acamcad::polymesh::MVert* v,
 		const std::vector<acamcad::polymesh::MVert*>& adjVerts,
