@@ -74,7 +74,3 @@ Parameterization results
 ![hand of Floater's weight](pics/uv/checkerboard/hand_floater_poly.png)
 
 > Refer to `./pics` for more results. 
-
-### Gallery
-
-**Under construction...**
