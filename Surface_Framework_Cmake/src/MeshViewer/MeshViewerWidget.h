@@ -38,6 +38,9 @@ signals:
 	void LoadMeshOKSignal(bool, QString);
 public slots:
 	void PrintMeshInfo(void);
+	void ChangeUVState(void);
+	void SetUVScaleIndex(int);
+
 protected:
 	virtual void DrawScene(void) override;
 	void DrawSceneMesh(void);
@@ -69,6 +72,9 @@ protected:
 	bool isTwoSideLighting;
 	bool isDrawBoundingBox;
 	bool isDrawBoundary;
+
+	bool isDrawMeshUV;
+	double m_UVscale = 2.0f;
 
 	// ============ hw2: Project Newton Method member ============
 	bool isParameterized = false;

@@ -14,7 +14,8 @@ MeshViewerWidget::MeshViewerWidget(QWidget* parent)
 	isEnableLighting(true),
 	isTwoSideLighting(false),
 	isDrawBoundingBox(false),
-	isDrawBoundary(false)
+	isDrawBoundary(false),
+	isDrawMeshUV(false)
 {
 }
 
@@ -172,6 +173,20 @@ void MeshViewerWidget::PrintMeshInfo(void)
 	
 }
 
+void MeshViewerWidget::ChangeUVState(void)
+{
+	isDrawMeshUV = !isDrawMeshUV;
+	update();
+}
+
+void MeshViewerWidget::SetUVScaleIndex(int v)
+{
+	double scaleUVMin = 1.0;
+	double scaleUVMax = 10.0;
+	m_UVscale = scaleUVMin + static_cast<double>(v) / 100.0 * (scaleUVMax - scaleUVMin);
+	update();
+}
+
 void MeshViewerWidget::DrawScene(void)
 {
 	glMatrixMode(GL_PROJECTION);
@@ -183,13 +198,10 @@ void MeshViewerWidget::DrawScene(void)
 	if (isDrawBoundary) DrawBoundary();
 	if (isEnableLighting) glEnable(GL_LIGHTING);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, isTwoSideLighting);
-	DrawSceneMesh();
 
-	//if (isProjNewtonSolver)
-	//{
-	//	isProjNewtonSolver = m_ProjNewtonSolver.UpdateMeshUV(polyMesh);
-	//	UpdateMesh();
-	//}
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
+	DrawSceneMesh();
 
 	if (isEnableLighting) glDisable(GL_LIGHTING);
 }
@@ -317,8 +329,11 @@ void MeshViewerWidget::DrawSmooth() const
 {
 	glShadeModel(GL_SMOOTH);
 
-	glBindTexture(GL_TEXTURE_2D, glTextureID);
-	glEnable(GL_TEXTURE_2D);
+	if (isDrawMeshUV)
+	{
+		glBindTexture(GL_TEXTURE_2D, glTextureID);
+		glEnable(GL_TEXTURE_2D);
+	}
 
 	glBegin(GL_TRIANGLES);
 
@@ -328,8 +343,7 @@ void MeshViewerWidget::DrawSmooth() const
 		{
 			glNormal3dv(fvh->normal().data());
 			auto uv = fvh->getTextureUVW().uv;
-			float uvScale = 5.0f;
-			glTexCoord2f(uv[0] * uvScale, uv[1] * uvScale);
+			glTexCoord2f(uv[0] * m_UVscale, uv[1] * m_UVscale);
 			glVertex3dv(fvh->position().data());
 		}
 	}
@@ -368,7 +382,7 @@ void MeshViewerWidget::DrawBoundary(void) const
 	float linewidth;
 	glGetFloatv(GL_LINE_WIDTH, &linewidth);
 	glLineWidth(2.0f);
-	glColor3d(0.1, 0.1, 0.1);
+	glColor3d(0.4, 0.3, 0.5);
 	glBegin(GL_LINES);
 
 	for (const auto& eh : polyMesh->edges()) {
@@ -539,7 +553,7 @@ void MeshViewerWidget::ProjNewtonSolver()
 
 	std::cout << "Project Newton Solver finished with " << ms << " ms\n";
 
-	m_ProjNewtonSolver.SaveEnergies("energies.txt");
+	//m_ProjNewtonSolver.SaveEnergies("energies.txt");
 
 	isProjNewtonSolver = false;
 

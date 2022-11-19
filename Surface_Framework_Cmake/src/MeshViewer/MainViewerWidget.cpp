@@ -31,6 +31,8 @@ void MainViewerWidget::CreateParamWidget(void)
 {
 	meshparamwidget = new MeshParamWidget();
 	connect(meshparamwidget, SIGNAL(PrintInfoSignal()), meshviewerwidget, SLOT(PrintMeshInfo()));
+	connect(meshparamwidget, SIGNAL(ClickDrawUVSignal()), meshviewerwidget, SLOT(ChangeUVState()));
+	connect(meshparamwidget, SIGNAL(ChangeUVScaleSignal(int)), meshviewerwidget, SLOT(SetUVScaleIndex(int)));
 }
 
 void MainViewerWidget::CreateViewerDialog(void)
