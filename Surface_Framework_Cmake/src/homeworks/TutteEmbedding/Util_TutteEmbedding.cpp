@@ -9,8 +9,8 @@ namespace tutte
 {
 	std::vector<Eigen::Vector2d> GetBoundaryUVs(size_t numVerts, UVBoundaryType type)
 	{
-		const double CIRCLE_RADIUS = 0.5;
-		std::vector<Eigen::Vector2d> boundaryUVs(numVerts, { CIRCLE_RADIUS, CIRCLE_RADIUS });
+		double CIRCLE_RADIUS = 1.0;
+		std::vector<Eigen::Vector2d> boundaryUVs(numVerts, { 0.0, 0.0 });
 
 		// 1. polygon edges
 		size_t polygonEdges = 3;

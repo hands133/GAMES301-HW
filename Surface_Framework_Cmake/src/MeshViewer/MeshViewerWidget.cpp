@@ -194,9 +194,9 @@ void MeshViewerWidget::DrawScene(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(&modelviewmatrix[0]);
 	//DrawAxis();
-	if (isDrawBoundingBox) DrawBoundingBox();
-	if (isDrawBoundary) DrawBoundary();
-	if (isEnableLighting) glEnable(GL_LIGHTING);
+	if (isDrawBoundingBox)	DrawBoundingBox();
+	if (isDrawBoundary)		DrawBoundary();
+	if (isEnableLighting)	glEnable(GL_LIGHTING);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, isTwoSideLighting);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -364,6 +364,9 @@ void MeshViewerWidget::DrawUVEmbedding() const
 		glEnable(GL_TEXTURE_2D);
 	}
 
+	auto transfer = (ptMin + ptMax) * 0.5;
+	double radius = (ptMin - ptMax).norm() * 0.5 / std::sqrt(3.0);
+
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
@@ -377,7 +380,7 @@ void MeshViewerWidget::DrawUVEmbedding() const
 				glNormal3dv(fvh->normal().data());
 				auto uv = fvh->getTextureUVW().uv;
 				glTexCoord2f(uv[0] * m_UVscale, uv[1] * m_UVscale);
-				glVertex3f(uv[0], uv[1], 0.0f);
+				glVertex3f(uv[0] * radius + transfer.x(), uv[1] * radius + transfer.y(), 0.0f);
 			}
 		}
 
@@ -386,6 +389,7 @@ void MeshViewerWidget::DrawUVEmbedding() const
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 	{
+
 		glDisable(GL_LIGHTING);
 
 		glColor3d(0.2, 0.2, 0.2);
@@ -399,9 +403,9 @@ void MeshViewerWidget::DrawUVEmbedding() const
 			auto uv1 = v1->getTextureUVW().uv;
 
 			glNormal3dv(v0->normal().data());
-			glVertex3d(uv0[0], uv0[1], 0.0f);
+			glVertex3d(uv0[0] * radius + transfer.x(), uv0[1] * radius + transfer.y(), 0.0f);
 			glNormal3dv(v1->normal().data());
-			glVertex3d(uv1[0], uv1[1], 0.0f);
+			glVertex3d(uv1[0] * radius + transfer.x(), uv1[1] * radius + transfer.y(), 0.0f);
 		}
 		glEnd();
 
@@ -500,7 +504,7 @@ Eigen::SparseMatrix<double> MeshViewerWidget::TutteParam(TutteParamType type)
 	int M = boundaryVertLists.size();
 	int N = polyMesh->numVertices();
 
-	// TODO : Better to add a function to control the boundary polygon, or a slider?
+
 	auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_CIRCLE);
 	//auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_TRIANGLE);
 	//auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_SQUARE);
@@ -563,9 +567,6 @@ Eigen::SparseMatrix<double> MeshViewerWidget::TutteParam(TutteParamType type)
 	{
 		auto pVert = polyMesh->vert(i);
 		auto vID = pVert->index();
-	
-		// TODO : Better to add a function to set vertex position
-		//pVert->setPosition(x.coeff(vID, 0), x.coeff(vID, 1), 0.0);
 		pVert->setTexture(x.coeff(vID, 0), x.coeff(vID, 1));
 	}
 
@@ -615,6 +616,5 @@ void MeshViewerWidget::ProjNewtonSolver()
 
 	isProjNewtonSolver = false;
 
-	UpdateMesh();
 	update();
 }
