@@ -148,6 +148,10 @@ void MainViewerWidget::ShowSmooth(void)
 	meshviewerwidget->SetDrawMode(InteractiveViewerWidget::SMOOTH);
 }
 
+void MainViewerWidget::ShowUVEmbedding(void)
+{
+	meshviewerwidget->SetDrawMode(InteractiveViewerWidget::UV_EMBEDDING);
+}
 
 void MainViewerWidget::Lighting(bool b)
 {

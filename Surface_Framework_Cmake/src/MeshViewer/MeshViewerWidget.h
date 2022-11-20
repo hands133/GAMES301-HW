@@ -52,6 +52,7 @@ private:
 	void DrawFlatLines(void) const;
 	void DrawFlat(void) const;
 	void DrawSmooth() const;
+	void DrawUVEmbedding() const;
 	void DrawBoundingBox(void) const;
 	void DrawBoundary(void) const;
 

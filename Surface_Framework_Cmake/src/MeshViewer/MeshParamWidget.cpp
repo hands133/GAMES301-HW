@@ -41,8 +41,6 @@ void MeshParamWidget::CreateTabWidget(void)
 	QVBoxLayout *layout = new QVBoxLayout();
 	layout->addWidget(pbPrintInfo);
 	layout->addWidget(pMarkUVDraw);
-	//layout->addWidget(pUVScale);
-	//layout->addWidget(hLayout);
 	layout->addLayout(hLayout);
 	layout->addStretch();
 	wParam = new QWidget();

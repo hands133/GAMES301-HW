@@ -12,6 +12,7 @@
       <file>Images/Save.png</file>
       <file>Images/boundary.png</file>
       <file>Images/bbox.png</file>
-      <file>Images/lighton.png</file>
+	<file>Images/lighton.png</file>
+	<file>Images/texture.png</file>
     </qresource>
 </RCC>
