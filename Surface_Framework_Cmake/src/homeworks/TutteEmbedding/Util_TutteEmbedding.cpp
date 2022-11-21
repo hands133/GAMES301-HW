@@ -9,8 +9,8 @@ namespace tutte
 {
 	std::vector<Eigen::Vector2d> GetBoundaryUVs(size_t numVerts, UVBoundaryType type)
 	{
-		const double CIRCLE_RADIUS = 0.5;
-		std::vector<Eigen::Vector2d> boundaryUVs(numVerts, { CIRCLE_RADIUS, CIRCLE_RADIUS });
+		double CIRCLE_RADIUS = 1.0;
+		std::vector<Eigen::Vector2d> boundaryUVs(numVerts, { 0.0, 0.0 });
 
 		// 1. polygon edges
 		size_t polygonEdges = 3;
@@ -42,7 +42,7 @@ namespace tutte
 
 		// rotate matrix
 		Eigen::Matrix2d polygonRotateMat;
-		polygonRotateMat << Eigen::Vector2d{ 0, 1 }, Eigen::Vector2d{-1, 0};
+		polygonRotateMat << Eigen::Vector2d{ 0, 1 }, Eigen::Vector2d{ -1, 0 };
 
 		// 3. calculation
 		auto boundaryUVIter = boundaryUVs.begin();
@@ -100,7 +100,7 @@ namespace tutte
 
 		Eigen::Vector2d P(0.0, 0.0);
 		std::vector<Eigen::Vector2d> adjUVs(N, { 0.0, 0.0 });
-		adjUVs[0] = { neighborAngleInfo[0].x(), 0.0};
+		adjUVs[0] = { neighborAngleInfo[0].x(), 0.0 };
 
 		for (int j = 1; j < N; ++j)
 		{

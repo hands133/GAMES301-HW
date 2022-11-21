@@ -32,7 +32,10 @@ protected:
 	void ShowHiddenLines(void);
 	void ShowFlatLines(void);
 	void ShowFlat(void);
+	// ============ hw1: smooth shading ============
 	void ShowSmooth(void);
+	// ============ fix: add UV drawing ============
+	void ShowUVEmbedding(void);
 	void Lighting(bool b);
 	void DoubleSideLighting(bool b);
 	void ShowBoundingBox(bool b);

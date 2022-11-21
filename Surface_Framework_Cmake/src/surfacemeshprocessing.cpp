@@ -84,6 +84,11 @@ void SurfaceMeshProcessing::CreateActions(void)
 	actSmooth->setCheckable(true);
 	connect(actSmooth, SIGNAL(triggered()), viewer, SLOT(ShowSmooth()));
 
+    actUVEmbedding = new QAction(tr("Embedding"), this);
+	actUVEmbedding->setIcon(QIcon(":/SurfaceMeshProcessing/Images/texture.png"));
+	actUVEmbedding->setCheckable(true);
+	connect(actUVEmbedding, SIGNAL(triggered()), viewer, SLOT(ShowUVEmbedding()));
+
 	QActionGroup *agViewGroup = new QActionGroup(this);
 	agViewGroup->addAction(actPoints);
 	agViewGroup->addAction(actWireframe);
@@ -91,6 +96,7 @@ void SurfaceMeshProcessing::CreateActions(void)
 	agViewGroup->addAction(actFlatLines);
 	agViewGroup->addAction(actFlat);
 	agViewGroup->addAction(actSmooth);
+    agViewGroup->addAction(actUVEmbedding);
 	actFlatLines->setChecked(true);
 
 	actLighting = new QAction(tr("Light on/off"), this);
@@ -165,6 +171,7 @@ void SurfaceMeshProcessing::CreateMenus(void)
 	menuRenderMode->addAction(actFlatLines);
 	menuRenderMode->addAction(actFlat);
 	menuRenderMode->addAction(actSmooth);
+	menuRenderMode->addAction(actUVEmbedding);
 	QMenu *menuLighting = menuView->addMenu(tr("Lighting"));
 	menuLighting->addAction(actLighting);
 	menuLighting->addAction(actDoubleSide);
@@ -205,6 +212,7 @@ void SurfaceMeshProcessing::CreateToolBars(void)
 	tbView->addAction(actFlatLines);
 	tbView->addAction(actFlat);
 	tbView->addAction(actSmooth);
+    tbView->addAction(actUVEmbedding);
 	tbView->addSeparator()->setEnabled(false);
 	tbView->addAction(actLighting);
 	tbView->addAction(actBoundingBox);

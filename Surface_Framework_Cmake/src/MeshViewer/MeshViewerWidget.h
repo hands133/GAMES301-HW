@@ -31,6 +31,9 @@ signals:
 	void LoadMeshOKSignal(bool, QString);
 public slots:
 	void PrintMeshInfo(void);
+    void ChangeUVState(void);
+	void SetUVScaleIndex(int);
+
 protected:
 	virtual void DrawScene(void) override;
 	void DrawSceneMesh(void);
@@ -42,6 +45,7 @@ private:
 	void DrawFlatLines(void) const;
 	void DrawFlat(void) const;
 	void DrawSmooth() const;
+    void DrawUVEmbedding() const;
 	void DrawBoundingBox(void) const;
 	void DrawBoundary(void) const;
 
@@ -62,4 +66,7 @@ protected:
 	bool isTwoSideLighting;
 	bool isDrawBoundingBox;
 	bool isDrawBoundary;
+
+	bool isDrawMeshUV;
+	double m_UVscale = 2.0f;
 };

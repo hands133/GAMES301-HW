@@ -37,6 +37,8 @@ private:
 	QAction *actFlat;
 	// ============ hw1: smooth shading ============
 	QAction *actSmooth;
+    // ============ fix: add UV drawing ============
+	QAction *actUVEmbedding;
 	QAction *actLighting;
 	QAction *actDoubleSide;
 	QAction *actBoundingBox;

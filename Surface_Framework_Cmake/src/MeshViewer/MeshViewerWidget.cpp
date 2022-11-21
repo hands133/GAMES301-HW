@@ -15,7 +15,8 @@ MeshViewerWidget::MeshViewerWidget(QWidget* parent)
 	isEnableLighting(true),
 	isTwoSideLighting(false),
 	isDrawBoundingBox(false),
-	isDrawBoundary(false)
+	isDrawBoundary(false),
+	isDrawMeshUV(false)
 {
 }
 
@@ -166,6 +167,20 @@ void MeshViewerWidget::PrintMeshInfo(void)
 	
 }
 
+void MeshViewerWidget::ChangeUVState(void)
+{
+	isDrawMeshUV = !isDrawMeshUV;
+	update();
+}
+
+void MeshViewerWidget::SetUVScaleIndex(int v)
+{
+	double scaleUVMin = 1.0;
+	double scaleUVMax = 10.0;
+	m_UVscale = scaleUVMin + static_cast<double>(v) / 100.0 * (scaleUVMax - scaleUVMin);
+	update();
+}
+
 void MeshViewerWidget::DrawScene(void)
 {
 	glMatrixMode(GL_PROJECTION);
@@ -173,11 +188,15 @@ void MeshViewerWidget::DrawScene(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(&modelviewmatrix[0]);
 	//DrawAxis();
-	if (isDrawBoundingBox) DrawBoundingBox();
-	if (isDrawBoundary) DrawBoundary();
-	if (isEnableLighting) glEnable(GL_LIGHTING);
+	if (isDrawBoundingBox)  DrawBoundingBox();
+	if (isDrawBoundary)     DrawBoundary();
+	if (isEnableLighting)   glEnable(GL_LIGHTING);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, isTwoSideLighting);
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
 	DrawSceneMesh();
+
 	if (isEnableLighting) glDisable(GL_LIGHTING);
 }
 
@@ -205,6 +224,9 @@ void MeshViewerWidget::DrawSceneMesh(void)
 		break;
 	case SMOOTH:
 		DrawSmooth();
+		break;
+    case UV_EMBEDDING:
+		DrawUVEmbedding();
 		break;
 	default:
 		break;
@@ -304,8 +326,11 @@ void MeshViewerWidget::DrawSmooth() const
 {
 	glShadeModel(GL_SMOOTH);
 
-	glBindTexture(GL_TEXTURE_2D, glTextureID);
-	glEnable(GL_TEXTURE_2D);
+	if (isDrawMeshUV)
+	{
+		glBindTexture(GL_TEXTURE_2D, glTextureID);
+		glEnable(GL_TEXTURE_2D);
+	}
 
 	glBegin(GL_TRIANGLES);
 
@@ -315,13 +340,71 @@ void MeshViewerWidget::DrawSmooth() const
 		{
 			glNormal3dv(fvh->normal().data());
 			auto uv = fvh->getTextureUVW().uv;
-			float uvScale = 10.0f;
-			glTexCoord2f(uv[0] * uvScale, uv[1] * uvScale);
+			glTexCoord2f(uv[0] * m_UVscale, uv[1] * m_UVscale);
 			glVertex3dv(fvh->position().data());
 		}
 	}
 
 	glEnd();
+}
+
+void MeshViewerWidget::DrawUVEmbedding() const
+{
+	glShadeModel(GL_SMOOTH);
+
+	if (isDrawMeshUV)
+	{
+		glBindTexture(GL_TEXTURE_2D, glTextureID);
+		glEnable(GL_TEXTURE_2D);
+	}
+
+	auto transfer = (ptMin + ptMax) * 0.5;
+	double radius = (ptMin - ptMax).norm() * 0.5 / std::sqrt(3.0);
+
+	{
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1.0f, 1.0f);
+
+		glBegin(GL_TRIANGLES);
+
+		for (const auto& fh : polyMesh->polyfaces())
+		{
+			for (const auto& fvh : polyMesh->polygonVertices(fh))
+			{
+				glNormal3dv(fvh->normal().data());
+				auto uv = fvh->getTextureUVW().uv;
+				glTexCoord2f(uv[0] * m_UVscale, uv[1] * m_UVscale);
+				glVertex3f(uv[0] * radius + transfer.x(), uv[1] * radius + transfer.y(), 0.0f);
+			}
+		}
+
+		glEnd();
+
+		glDisable(GL_POLYGON_OFFSET_FILL);
+	}
+	{
+
+		glDisable(GL_LIGHTING);
+
+		glColor3d(0.2, 0.2, 0.2);
+
+		glBegin(GL_LINES);
+		for (const auto& eh : polyMesh->edges()) {
+			auto heh = eh->halfEdge();
+			auto v0 = heh->fromVertex();
+			auto v1 = heh->toVertex();
+			auto uv0 = v0->getTextureUVW().uv;
+			auto uv1 = v1->getTextureUVW().uv;
+
+			glNormal3dv(v0->normal().data());
+			glVertex3d(uv0[0] * radius + transfer.x(), uv0[1] * radius + transfer.y(), 0.0f);
+			glNormal3dv(v1->normal().data());
+			glVertex3d(uv1[0] * radius + transfer.x(), uv1[1] * radius + transfer.y(), 0.0f);
+		}
+		glEnd();
+
+		glEnable(GL_LIGHTING);
+	}
 }
 
 void MeshViewerWidget::DrawBoundingBox(void) const
@@ -355,7 +438,7 @@ void MeshViewerWidget::DrawBoundary(void) const
 	float linewidth;
 	glGetFloatv(GL_LINE_WIDTH, &linewidth);
 	glLineWidth(2.0f);
-	glColor3d(0.1, 0.1, 0.1);
+	glColor3d(0.4, 0.3, 0.5);
 	glBegin(GL_LINES);
 
 	for (const auto& eh : polyMesh->edges()) {
