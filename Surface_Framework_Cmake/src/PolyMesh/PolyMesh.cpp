@@ -1,7 +1,7 @@
 ﻿#include "include\PolyMesh/PolyMesh.h"
 #include "assert.h"
 #include <sstream>
-
+#include <algorithm>
 #include <unordered_set>
 #include <unordered_map>
 
@@ -41,7 +41,9 @@ namespace polymesh {
 			}
 		}
 
-		return boundaries[0];
+		return *std::max_element(boundaries.begin(), boundaries.end(),
+			[](const std::vector<MVert*>& lhs, const std::vector<MVert*>& rhs)
+			{ return lhs.size() < rhs.size(); });
 	}
 
 	bool PolyMesh::isBoundary(MVert* vert) const

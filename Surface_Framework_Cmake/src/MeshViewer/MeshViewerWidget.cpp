@@ -374,7 +374,7 @@ void MeshViewerWidget::DrawUVEmbedding() const
 				glNormal3dv(fvh->normal().data());
 				auto uv = fvh->getTextureUVW().uv;
 				glTexCoord2f(uv[0] * m_UVscale, uv[1] * m_UVscale);
-				glVertex3f(uv[0] * radius + transfer.x(), uv[1] * radius + transfer.y(), 0.0f);
+				glVertex3f(uv[0] * radius + transfer.x(), uv[1] * radius + transfer.y(), transfer.z());
 			}
 		}
 
@@ -383,7 +383,6 @@ void MeshViewerWidget::DrawUVEmbedding() const
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 	{
-
 		glDisable(GL_LIGHTING);
 
 		glColor3d(0.2, 0.2, 0.2);
@@ -397,9 +396,9 @@ void MeshViewerWidget::DrawUVEmbedding() const
 			auto uv1 = v1->getTextureUVW().uv;
 
 			glNormal3dv(v0->normal().data());
-			glVertex3d(uv0[0] * radius + transfer.x(), uv0[1] * radius + transfer.y(), 0.0f);
+			glVertex3d(uv0[0] * radius + transfer.x(), uv0[1] * radius + transfer.y(), transfer.z());
 			glNormal3dv(v1->normal().data());
-			glVertex3d(uv1[0] * radius + transfer.x(), uv1[1] * radius + transfer.y(), 0.0f);
+			glVertex3d(uv1[0] * radius + transfer.x(), uv1[1] * radius + transfer.y(), transfer.z());
 		}
 		glEnd();
 
