@@ -83,6 +83,7 @@ file (GLOB PolyMesh_FILE
 # files for homework
 file(GLOB HW1_TutteEmbedding_FILE src/homeworks/TutteEmbedding/**)
 file(GLOB HW2_EnergyEigensystems_FILE src/homeworks/EnergyEigensystems/**)
+file(GLOB HW3_FreeBoundary_FILE src/homeworks/FreeBoundary/**)
     
 add_executable(${PROJECT_NAME}
     ${GUI_FILE}
@@ -90,6 +91,7 @@ add_executable(${PROJECT_NAME}
     ${PolyMesh_FILE}
     ${HW1_TutteEmbedding_FILE}
     ${HW2_EnergyEigensystems_FILE}
+    ${HW3_FreeBoundary_FILE}
     ${QRC_FILES}
 )
     
@@ -100,6 +102,7 @@ source_group(PolyMesh FILES ${PolyMesh_FILE})
 source_group(HW)
 source_group(HW\\TutteEmbedding FILES ${HW1_TutteEmbedding_FILE})
 source_group(HW\\EnergyEigensystems FILES ${HW2_EnergyEigensystems_FILE})
+source_group(HW\\FreeBoundary FILES ${HW3_FreeBoundary_FILE})
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 add_custom_command(TARGET ${PROJECT_NAME}
@@ -115,7 +118,6 @@ target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::Core Qt5::Gui Qt5::OpenG
 target_include_directories(${PROJECT_NAME}
 PUBLIC "3rdparty/Eigen" # add Eigen
 PUBLIC "src/homeworks"  # add self-include dir
-PUBLIC "3rdparty/TinyAD/include"
 )
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
