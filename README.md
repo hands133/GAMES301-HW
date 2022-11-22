@@ -6,32 +6,26 @@ Simplified CMakeLists.txt to use vcpkg to manage 3dparty for automatly building 
 
 ## GAMES 301 Homework
 
-### Homework 2 : Analytic Eigensystems for Isotropic Distortion Energies (2D Symmetric Dirichlet Energy for now)
+### Homework 3 : Discrete one-forms on meshes and applications to 3D mesh parameterization (Sec. 4, Free-Boundary Linear Parameterization of 3D Meshes in the Presence of Constraints)
 
 Prerequisites:
 + Tutte's Embedding structure
-+ Optimization methods (Newton-type methods)
++ Least Square Method
 
 Target:
-1. [**DONE**] Implement the basic structure of the eigensystem.
-2. [**DONE**] Wrap datastructures.
-3. [**DONE**] Implement the Project Newtion Method.
+1. [**TODO**] Basic structure
 
 Usage:
  
 ```bash
-git checkout hw2_EnergyEigensystems
+git checkout hw3_FreeBoundary
 ./build_windows.bat
 ```
 then run the subproject `SurfaceFrameworkCmake`.
 
 Note
 
-+ Relevant codes please refer to `Surface_Framework_Cmake/src/homeworks/EnergyEigensystems`:
-  + `Util_DataStructure.h`
-  + `Util_DataStructure.cpp`
-  + `Util_EnergyEigensystems.h`,
-  + `Util_EnergyEigensystems.cpp`.
++ Relevant codes please refer to `Surface_Framework_Cmake/src/homeworks/FreeBoundary`:
 + I've add tabs of Tutte's weight and Floater Weight, but the UV mapping is only visible under `smooth rendering` mode.
 + If you want to visualize the 2D parameterization results, uncomment the line 468 in `MeshViewerWidget.cpp`.
 + If you want to change the 2D parameterization boundary shape, please refer to line 416 to line 420 in `MeshViewerWidget.cpp`.
@@ -44,14 +38,15 @@ Parameterization results
 
 | Name | Format | Face Type | V | E | F | Boundaries | Storage |
 | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-|   cathead | OBJ | triangle |  131 |  378 |  248 | 1 |  8 KB |
+<!-- |   cathead | OBJ | triangle |  131 |  378 |  248 | 1 |  8 KB |
 |     Balls | OBJ | triangle |  547 | 1578 | 1032 | 1 | 26 KB |
 | bunnyhead | OBJ | triangle |  741 | 2188 | 1448 | 1 | 54 KB |
-|      hand | OFF | triangle | 1558 | 4653 | 3096 | 1 | 97 KB |
+|      hand | OFF | triangle | 1558 | 4653 | 3096 | 1 | 97 KB | -->
 
 
 ### Gallery
-
+Under Construction....
+<!-- 
 + cathead : Project Newton Method
 ![cathead of Project Newton Method](pics/uv/checkerboard/cathead_projNewton_poly.png)
 + cathead : Floater's weight
@@ -71,6 +66,6 @@ Parameterization results
 + hand : Project Newton Method
 ![hand of Project Newton Method](pics/uv/checkerboard/hand_projNewton_poly.png)
 + hand : Floater's weight
-![hand of Floater's weight](pics/uv/checkerboard/hand_floater_poly.png)
+![hand of Floater's weight](pics/uv/checkerboard/hand_floater_poly.png) -->
 
-> Refer to `./pics` for more results. 
+<!-- > Refer to `./pics` for more results.  -->
