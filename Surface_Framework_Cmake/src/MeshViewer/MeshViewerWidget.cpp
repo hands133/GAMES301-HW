@@ -6,6 +6,7 @@
 #include <Eigen\SparseLU>
 
 #include "TutteEmbedding\Util_TutteEmbedding.h"
+#include "FreeBoundary\Util_FreeBoundary.h"
 
 MeshViewerWidget::MeshViewerWidget(QWidget* parent)
 	: QGLViewerWidget(parent),
@@ -39,9 +40,11 @@ bool MeshViewerWidget::LoadMesh(const std::string & filename)
 		update();
 
 		isParameterized = false;
-		isProjNewtonSolver = false;
+		isProjNewtonSolver = false; 
 
 		paramUVs.setZero();
+
+		edgeCut = freeb::CutEdge(polyMesh);
 
 		return true;
 	}
@@ -372,7 +375,6 @@ void MeshViewerWidget::DrawUVEmbedding() const
 		glPolygonOffset(1.0f, 1.0f);
 
 		glBegin(GL_TRIANGLES);
-
 		for (const auto& fh : polyMesh->polyfaces())
 		{
 			for (const auto& fvh : polyMesh->polygonVertices(fh))
@@ -383,14 +385,12 @@ void MeshViewerWidget::DrawUVEmbedding() const
 				glVertex3f(uv[0] * radius + transfer.x(), uv[1] * radius + transfer.y(), transfer.z());
 			}
 		}
-
 		glEnd();
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 	{
 		glDisable(GL_LIGHTING);
-
 		glColor3d(0.2, 0.2, 0.2);
 
 		glBegin(GL_LINES);
@@ -442,23 +442,72 @@ void MeshViewerWidget::DrawBoundary(void) const
 {
 	float linewidth;
 	glGetFloatv(GL_LINE_WIDTH, &linewidth);
-	glLineWidth(2.0f);
-	glColor3d(0.4, 0.3, 0.5);
-	glBegin(GL_LINES);
+	{
+		//glLineWidth(2.0f);
+		//glColor3d(0.0, 0.0, 1.0);
+		//glBegin(GL_LINES);
 
-	for (const auto& eh : polyMesh->edges()) {
-		if (polyMesh->isBoundary(eh)) {
-			auto heh = eh->halfEdge();
-			auto v0 = heh->fromVertex();
-			auto v1 = heh->toVertex();
-			glNormal3dv(v0->normal().data());
-			glVertex3dv(v0->position().data());
-			glNormal3dv(v1->normal().data());
-			glVertex3dv(v1->position().data());
+		//for (const auto& eh : polyMesh->edges()) {
+		//	if (polyMesh->isBoundary(eh)) {
+		//		auto heh = eh->halfEdge();
+		//		auto v0 = heh->fromVertex();
+		//		auto v1 = heh->toVertex();
+		//		glNormal3dv(v0->normal().data());
+		//		glVertex3dv(v0->position().data());
+		//		glNormal3dv(v1->normal().data());
+		//		glVertex3dv(v1->position().data());
+		//	}
+		//}
+		//glEnd();
+	}
+
+	{
+		auto transfer = (ptMin + ptMax) * 0.5;
+		double radius = (ptMin - ptMax).norm() * 0.5 / std::sqrt(3.0);
+
+		glLineWidth(2.0f);
+		glColor3d(1.0, 0.2, 0.3);
+		if (drawmode == DrawMode::UV_EMBEDDING)
+		{
+			glBegin(GL_LINES);
+			for (const auto& eh : polyMesh->edges()) {
+				size_t edgeIdx = eh->index();
+				if (edgeCut[edgeIdx] == 0x01)
+				{
+					auto heh = eh->halfEdge();
+					auto v0 = heh->fromVertex();
+					auto v1 = heh->toVertex();
+
+					auto uv0 = v0->getTextureUVW();
+					auto uv1 = v1->getTextureUVW();
+
+					glNormal3dv(v0->normal().data());
+					glVertex3d(uv0[0] * radius + transfer.x(), uv0[1] * radius + transfer.y(), transfer.z());
+					glNormal3dv(v1->normal().data());
+					glVertex3d(uv1[0] * radius + transfer.x(), uv1[1] * radius + transfer.y(), transfer.z());
+				}
+			}
+			glEnd();
+		} else {
+			glBegin(GL_LINES);
+			for (const auto& eh : polyMesh->edges()) {
+				size_t edgeIdx = eh->index();
+				if (edgeCut[edgeIdx] == 0x01)
+				{
+					auto heh = eh->halfEdge();
+					auto v0 = heh->fromVertex();
+					auto v1 = heh->toVertex();
+
+					glNormal3dv(v0->normal().data());
+					glVertex3dv(v0->position().data());
+					glNormal3dv(v1->normal().data());
+					glVertex3dv(v1->position().data());
+				}
+			}
+			glEnd();
 		}
 	}
-	
-	glEnd();
+
 	glLineWidth(linewidth);
 }
 

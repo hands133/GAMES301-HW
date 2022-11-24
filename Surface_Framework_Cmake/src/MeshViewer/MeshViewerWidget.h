@@ -84,4 +84,7 @@ protected:
 	Eigen::SparseMatrix<double> paramUVs;
 
 	eigensys::ProjectNewtonSolver m_ProjNewtonSolver;
+
+	// ============ hw3: Free Boundary member ============
+	std::vector<char> edgeCut;
 };
