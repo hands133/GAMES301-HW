@@ -4,6 +4,7 @@
 #include "../PolyMesh/include/PolyMesh/IOManager.h"
 
 #include "EnergyEigensystems\Util_EnergyEigensystems.h"
+#include "FreeBoundary\Util_FreeBoundary.h"
 
 #include <Eigen\Sparse>
 
@@ -32,7 +33,8 @@ public:
 	Eigen::SparseMatrix<double> TutteParam(TutteParamType type);
 	// ============ hw2: Project Newton Method ============
 	void ProjNewtonSolver();
-
+	// ============ hw3: Boundary Free Method ============
+	void FreeBoundarySolver();
 
 signals:
 	void LoadMeshOKSignal(bool, QString);
@@ -86,5 +88,8 @@ protected:
 	eigensys::ProjectNewtonSolver m_ProjNewtonSolver;
 
 	// ============ hw3: Free Boundary member ============
+	bool isFreeBoundarySolver = false;
+
 	std::vector<char> edgeCut;
+	freeb::FreeBoundarySolver m_FreeBoundarySolver;
 };

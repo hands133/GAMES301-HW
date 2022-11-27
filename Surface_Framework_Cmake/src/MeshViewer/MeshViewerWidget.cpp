@@ -41,6 +41,7 @@ bool MeshViewerWidget::LoadMesh(const std::string & filename)
 
 		isParameterized = false;
 		isProjNewtonSolver = false; 
+		isFreeBoundarySolver = false;
 
 		paramUVs.setZero();
 
@@ -663,6 +664,40 @@ void MeshViewerWidget::ProjNewtonSolver()
 	//m_ProjNewtonSolver.SaveEnergies("energies.txt");
 
 	isProjNewtonSolver = false;
+
+	update();
+}
+
+void MeshViewerWidget::FreeBoundarySolver()
+{
+	if (polyMesh->numVertices() == 0)
+	{
+		std::cerr << "ERROR: ProjNewtonSolver() No vertices!" << std::endl;
+		return;
+	}
+
+	if (!isFreeBoundarySolver)
+	{
+		m_FreeBoundarySolver.PresetMeshUV(polyMesh);
+		isFreeBoundarySolver = true;
+	}
+
+	auto timeStart = std::chrono::steady_clock::now();
+
+	if (false)
+	{
+		m_FreeBoundarySolver.UpdateMeshUV(polyMesh);
+
+		auto timeEnd = std::chrono::steady_clock::now();
+		auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
+
+		std::cout << "Free Boundary Solver finished with " << ms << " ms\n";
+	}
+	else {
+		std::cout << "Free Boundary Solver finished\n";
+	}
+
+	isFreeBoundarySolver = false;
 
 	update();
 }

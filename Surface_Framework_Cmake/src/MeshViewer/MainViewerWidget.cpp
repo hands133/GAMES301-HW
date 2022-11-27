@@ -190,6 +190,12 @@ void MainViewerWidget::ProjNewtonSolver()
 	meshviewerwidget->ProjNewtonSolver();
 }
 
+// ============ hw3: Free Boudnary Solver API ============
+void MainViewerWidget::FreeBoundarySolver()
+{
+	meshviewerwidget->FreeBoundarySolver();
+}
+
 void MainViewerWidget::ResetView(void)
 {
 	meshviewerwidget->ResetView();

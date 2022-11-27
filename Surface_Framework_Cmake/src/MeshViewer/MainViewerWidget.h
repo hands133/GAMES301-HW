@@ -45,6 +45,8 @@ protected:
 	void TutteParam_FlaterWeight();
 	// ============ hw2: Project Newton Solver ============
 	void ProjNewtonSolver();
+	// ============ hw3: Free Boundary Solver ============
+	void FreeBoundarySolver();
 
 	void ResetView(void);
 	void ViewCenter(void);

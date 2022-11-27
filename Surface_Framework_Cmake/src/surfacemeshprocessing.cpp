@@ -153,6 +153,11 @@ void SurfaceMeshProcessing::CreateActions(void)
 	actProjNewtonSolver->setStatusTip(tr("Optimize Tutte's Embedding with Project-Newton-Solver"));
 	connect(actProjNewtonSolver, SIGNAL(triggered()), viewer, SLOT(ProjNewtonSolver()));
 
+	// ============ hw3: Actions ============
+	actFreeBoundarySolver = new QAction("Free Boundary Solver", this);
+	actFlat->setStatusTip(tr("Conformal Param with Non-convex Boundary"));
+	connect(actFreeBoundarySolver, SIGNAL(triggered()), viewer, SLOT(FreeBoundarySolver()));
+
 	actAbout = new QAction(tr("About"), this);
 	connect(actAbout, SIGNAL(triggered()), SLOT(About()));
 }
@@ -196,8 +201,13 @@ void SurfaceMeshProcessing::CreateMenus(void)
 	tutteParam->addAction(actParamAverage);
 	tutteParam->addAction(actParamFloater);
 
-	QMenu* paramOpt = menuTools->addMenu(tr("Mesh Optimizer"));
+	// project newton action
+	QMenu* paramOpt = menuTools->addMenu(tr("Param Optimizer"));
 	paramOpt->addAction(actProjNewtonSolver);
+
+	// free boundary action
+	QMenu* paramFreeB = menuTools->addMenu(tr("Free Boundary Param"));
+	paramFreeB->addAction(actFreeBoundarySolver);
 
 	QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
 	menuHelp->addAction(actAbout);

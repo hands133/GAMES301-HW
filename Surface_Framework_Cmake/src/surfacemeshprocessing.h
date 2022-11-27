@@ -56,6 +56,9 @@ private:
 	// ============ hw2: Actions ============
 	QAction* actProjNewtonSolver;
 
+	// ============ hw3: Actions ============
+	QAction* actFreeBoundarySolver;
+
 	// Help Actions.
 	QAction *actAbout;
 
