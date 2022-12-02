@@ -117,7 +117,7 @@ namespace eigensys
 
 		std::cout << "max |Gi| = " << G.cwiseAbs().maxCoeff() << "\t";
 
-		if (G.cwiseAbs().maxCoeff() < 1.0e-4)
+		if (G.cwiseAbs().maxCoeff() < std::numeric_limits<float>::epsilon())
 		{
 			std::cout << "================CONVERGE!!!================\n";
 			m_Iters = 0;
@@ -137,7 +137,7 @@ namespace eigensys
 		double step = CalculateNoFlipoverStep(mesh, d);
 		std::cout << "A = " << step << "\t";
 
-		auto [energy, updatedUV] = Line_Search(mesh, d, G, m_Energy, 0.8, 1.0e-4, std::min(step * 0.99, 1.0));
+		auto [energy, updatedUV] = Line_Search(mesh, d, G, m_Energy, 0.8, 1.0e-4, std::min(step * 0.8, 1.0));
 		m_EnergyRecord.emplace_back(energy);
 
 		m_Energy = energy;
@@ -305,7 +305,7 @@ namespace eigensys
 			{
 				t1 = -C / B;
 				//    avoid divide-by-zero
-				minStep = (B == 0) ? minStep : ((t1 > 0) ? t1 : minStep);
+				minStep = (B == 0) ? minStep : ((t1 > 0) ? std::min(t1, minStep) : minStep);
 			}
 		}
 
