@@ -29,11 +29,13 @@ namespace eigensys
 		double midx = (xmin + xmax) * 0.5;
 		double midy = (ymin + ymax) * 0.5;
 
+		double maxScale = std::max(xmax - xmin, ymax - ymin);
+
 		for (size_t vertID = 0; vertID < numV; ++vertID)
 		{
 			auto* vert = mesh->vert(vertID);
-			float UVx = static_cast<float>((UVs(2 * vertID + 0) - midx) / (xmax - xmin));
-			float UVy = static_cast<float>((UVs(2 * vertID + 1) - midy) / (ymax - ymin));
+			float UVx = static_cast<float>((UVs(2 * vertID + 0) - midx) / maxScale);
+			float UVy = static_cast<float>((UVs(2 * vertID + 1) - midy) / maxScale);
 			vert->setTexture(UVx * 2.0, UVy * 2.0, 0.0);
 		}
 	}
