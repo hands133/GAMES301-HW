@@ -676,26 +676,14 @@ void MeshViewerWidget::FreeBoundarySolver()
 		return;
 	}
 
-	if (!isFreeBoundarySolver)
-	{
-		m_FreeBoundarySolver.PresetMeshUV(polyMesh);
-		isFreeBoundarySolver = true;
-	}
-
 	auto timeStart = std::chrono::steady_clock::now();
 
-	if (false)
-	{
-		m_FreeBoundarySolver.UpdateMeshUV(polyMesh);
+	m_FreeBoundarySolver.Solve(polyMesh);
 
-		auto timeEnd = std::chrono::steady_clock::now();
-		auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
+	auto timeEnd = std::chrono::steady_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
 
-		std::cout << "Free Boundary Solver finished with " << ms << " ms\n";
-	}
-	else {
-		std::cout << "Free Boundary Solver finished\n";
-	}
+	std::cout << "Free Boundary Solver finished with " << ms << " ms\n";
 
 	isFreeBoundarySolver = false;
 
