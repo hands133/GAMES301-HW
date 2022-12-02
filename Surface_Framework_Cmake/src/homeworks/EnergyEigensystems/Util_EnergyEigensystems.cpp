@@ -305,7 +305,7 @@ namespace eigensys
 			{
 				t1 = -C / B;
 				//    avoid divide-by-zero
-				minStep = (B == 0) ? minStep : ((t1 > 0) ? t1 : minStep);
+				minStep = (B == 0) ? minStep : ((t1 > 0) ? std::min(t1, minStep) : minStep);
 			}
 		}
 
