@@ -45,8 +45,6 @@ bool MeshViewerWidget::LoadMesh(const std::string & filename)
 
 		paramUVs.setZero();
 
-		edgeCut = freeb::CutEdge(polyMesh);
-
 		return true;
 	}
 
@@ -360,7 +358,8 @@ void MeshViewerWidget::DrawSmooth() const
 
 void MeshViewerWidget::DrawUVEmbedding() const
 {
-	glShadeModel(GL_SMOOTH);
+	//glShadeModel(GL_SMOOTH);
+	glShadeModel(GL_FLAT);
 
 	if (isDrawMeshUV)
 	{
@@ -380,7 +379,8 @@ void MeshViewerWidget::DrawUVEmbedding() const
 		{
 			for (const auto& fvh : polyMesh->polygonVertices(fh))
 			{
-				glNormal3dv(fvh->normal().data());
+				//glNormal3dv(fvh->normal().data());
+				glNormal3d(0.0, 0.0, 1.0);
 				auto uv = fvh->getTextureUVW().uv;
 				glTexCoord2f(uv[0] * m_UVscale, uv[1] * m_UVscale);
 				glVertex3f(uv[0] * radius + transfer.x(), uv[1] * radius + transfer.y(), transfer.z());
@@ -444,69 +444,22 @@ void MeshViewerWidget::DrawBoundary(void) const
 	float linewidth;
 	glGetFloatv(GL_LINE_WIDTH, &linewidth);
 	{
-		//glLineWidth(2.0f);
-		//glColor3d(0.0, 0.0, 1.0);
-		//glBegin(GL_LINES);
-
-		//for (const auto& eh : polyMesh->edges()) {
-		//	if (polyMesh->isBoundary(eh)) {
-		//		auto heh = eh->halfEdge();
-		//		auto v0 = heh->fromVertex();
-		//		auto v1 = heh->toVertex();
-		//		glNormal3dv(v0->normal().data());
-		//		glVertex3dv(v0->position().data());
-		//		glNormal3dv(v1->normal().data());
-		//		glVertex3dv(v1->position().data());
-		//	}
-		//}
-		//glEnd();
-	}
-
-	{
-		auto transfer = (ptMin + ptMax) * 0.5;
-		double radius = (ptMin - ptMax).norm() * 0.5 / std::sqrt(3.0);
-
 		glLineWidth(2.0f);
-		glColor3d(1.0, 0.2, 0.3);
-		if (drawmode == DrawMode::UV_EMBEDDING)
-		{
-			glBegin(GL_LINES);
-			for (const auto& eh : polyMesh->edges()) {
-				size_t edgeIdx = eh->index();
-				if (edgeCut[edgeIdx] == 0x01)
-				{
-					auto heh = eh->halfEdge();
-					auto v0 = heh->fromVertex();
-					auto v1 = heh->toVertex();
+		glColor3d(0.0, 0.0, 1.0);
+		glBegin(GL_LINES);
 
-					auto uv0 = v0->getTextureUVW();
-					auto uv1 = v1->getTextureUVW();
-
-					glNormal3dv(v0->normal().data());
-					glVertex3d(uv0[0] * radius + transfer.x(), uv0[1] * radius + transfer.y(), transfer.z());
-					glNormal3dv(v1->normal().data());
-					glVertex3d(uv1[0] * radius + transfer.x(), uv1[1] * radius + transfer.y(), transfer.z());
-				}
+		for (const auto& eh : polyMesh->edges()) {
+			if (polyMesh->isBoundary(eh)) {
+				auto heh = eh->halfEdge();
+				auto v0 = heh->fromVertex();
+				auto v1 = heh->toVertex();
+				glNormal3dv(v0->normal().data());
+				glVertex3dv(v0->position().data());
+				glNormal3dv(v1->normal().data());
+				glVertex3dv(v1->position().data());
 			}
-			glEnd();
-		} else {
-			glBegin(GL_LINES);
-			for (const auto& eh : polyMesh->edges()) {
-				size_t edgeIdx = eh->index();
-				if (edgeCut[edgeIdx] == 0x01)
-				{
-					auto heh = eh->halfEdge();
-					auto v0 = heh->fromVertex();
-					auto v1 = heh->toVertex();
-
-					glNormal3dv(v0->normal().data());
-					glVertex3dv(v0->position().data());
-					glNormal3dv(v1->normal().data());
-					glVertex3dv(v1->position().data());
-				}
-			}
-			glEnd();
 		}
+		glEnd();
 	}
 
 	glLineWidth(linewidth);
@@ -683,7 +636,7 @@ void MeshViewerWidget::FreeBoundarySolver()
 	auto timeEnd = std::chrono::steady_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
 
-	std::cout << "Free Boundary Solver finished with " << ms << " ms\n";
+	std::cout << "[Free Boundary] Solver finished with " << ms << " ms\n";
 
 	isFreeBoundarySolver = false;
 

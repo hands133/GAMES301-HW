@@ -12,113 +12,6 @@
 
 namespace freeb
 {
-	// CutGraph Stage 1. calculate the dual spanning tree of the original graph
-	void CalculateDualSpanningTree(acamcad::polymesh::PolyMesh* mesh, size_t chosenFaceIdx,
-		std::vector<char>& edgeSharped, std::vector<char>& faceTouched)
-	{
-		size_t numE = mesh->edges().size();
-		size_t numF = mesh->polyfaces().size();
-
-		std::queue<size_t> faceIdxQueue;
-		faceIdxQueue.push(chosenFaceIdx);
-		faceTouched[chosenFaceIdx] = 0x01;
-
-		while (!faceIdxQueue.empty())
-		{
-			size_t faceIdx = faceIdxQueue.front();
-			auto* pFace = mesh->polyface(faceIdx);
-			faceIdxQueue.pop();
-
-			for (auto* pHalfEdge : mesh->polygonHalfedges(pFace))
-			{
-				auto* pEdge = pHalfEdge->edge();
-				size_t edgeIdx = pEdge->index();
-
-				if (!mesh->isBoundary(pEdge))
-				{
-					auto* pTwinFace = pHalfEdge->pair()->polygon();
-					size_t twinFaceIdx = pTwinFace->index();
-					if (faceTouched[twinFaceIdx] == 0x00)
-					{
-						faceTouched[twinFaceIdx] = 0x01;
-						edgeSharped[edgeIdx] = 0x01;
-
-						faceIdxQueue.push(twinFaceIdx);
-					}
-				}
-			}
-		}
-	}
-
-	void PruneSpanningTreeBranches(acamcad::polymesh::PolyMesh* mesh, std::vector<char>& edgeSharped)
-	{
-		size_t numV = mesh->vertices().size();
-		size_t numE = mesh->edges().size();
-
-		std::vector<uint16_t> vertValences(numV, 0);
-
-		std::vector<size_t> edgesTobeRemoved;
-		edgesTobeRemoved.reserve(std::accumulate(edgeSharped.begin(), edgeSharped.end(), size_t{ 0 },
-			[](size_t sum, char sharped) { return sum + static_cast<size_t>(sharped); }));
-
-		while (true)
-		{
-			bool prune = false;
-
-			for (size_t vertID = 0; vertID < numV; ++vertID)
-			{
-				acamcad::polymesh::MEdge* removeEdge = nullptr;
-				vertValences[vertID] = 0;
-
-				for (auto* pvAdjEdge : mesh->vertAdjacentEdge(mesh->vert(vertID)))
-					if (edgeSharped[pvAdjEdge->index()] == 0x01)
-					{
-						vertValences[vertID]++;
-						removeEdge = pvAdjEdge;
-					}
-
-				if (vertValences[vertID] == 1)
-				{
-					edgesTobeRemoved.emplace_back(removeEdge->index());
-					prune = true;
-				}
-			}
-
-			std::for_each(edgesTobeRemoved.begin(), edgesTobeRemoved.end(),
-				[&](size_t edgeID)
-				{
-					edgeSharped[edgeID] = 0x00;
-			vertValences[mesh->edge(edgeID)->getVert(0)->index()]--;
-			vertValences[mesh->edge(edgeID)->getVert(1)->index()]--;
-				});
-
-			edgesTobeRemoved.clear();
-			if (!prune)	return;
-		}
-	}
-
-	std::vector<char> CutEdge(acamcad::polymesh::PolyMesh* mesh)
-	{
-		size_t numE = mesh->edges().size();
-		size_t numF = mesh->polyfaces().size();
-
-		std::vector<char> edgeSharped(numE, 0x00);
-		std::vector<char> faceTouched(numF, 0x00);
-
-		CalculateDualSpanningTree(mesh, 0, edgeSharped, faceTouched);
-
-		for (size_t edgeID = 0; edgeID < numE; ++edgeID)
-			edgeSharped[edgeID] = 1 - edgeSharped[edgeID];
-
-		// Stage 2. prune vertices which valences == 1 till terminated
-		PruneSpanningTreeBranches(mesh, edgeSharped);
-
-		return edgeSharped;
-	}
-}
-
-namespace freeb
-{
 	void FreeBoundarySolver::Solve(acamcad::polymesh::PolyMesh* mesh)
 	{
 		m_UVList = Eigen::VectorXd(mesh->vertices().size() * 2);
@@ -144,7 +37,15 @@ namespace freeb
 		size_t pID0 = meshBoundaries[0]->index();
 		size_t pID1 = meshBoundaries[meshBoundaries.size() / 2]->index();
 		size_t numP = 2;
-		std::cout << "pinned index = [" << pID0 << ", " << pID1 << "]\n";
+		
+		std::cout << "[Free Boundary] pinned index = [" << pID0 << ", " << pID1 << "]\n";
+
+		Eigen::Vector2d fixP0;
+		fixP0 << -0.5, 0.0;
+		Eigen::Vector2d fixP1;
+		fixP1 << 0.5, 0.0;
+		m_UVList.segment(pID0 * 2, 2) = fixP0;
+		m_UVList.segment(pID1 * 2, 2) = fixP1;
 
 		std::vector<acamcad::polymesh::MVert*> pinnedVert(numP, nullptr);
 
@@ -160,7 +61,7 @@ namespace freeb
 		std::vector<Eigen::Triplet<double>> matAtriples;
 		std::vector<Eigen::Triplet<double>> matBtriples;
 
-		std::cout << "Free Boundary with LSCM\n";
+		std::cout << "[Free Boundary] LSCM Start\n";
 		auto timeStart = std::chrono::steady_clock::now();
 
 		std::unordered_map<acamcad::polymesh::MVert*, size_t> freeVertIndexMap;
@@ -231,10 +132,9 @@ namespace freeb
 		matA.makeCompressed();
 		matB.setFromTriplets(matBtriples.begin(), matBtriples.end());
 
-		// step 3. calculate matrix Mf and Mp
-		{
+		{	// step 3. calculate matrix Mf and Mp
 			Eigen::Vector4d vecU;
-			vecU << 0.0, 0.0, 0.0, 1.0;
+			vecU << fixP0.x(), fixP1.x(), fixP0.y(), fixP1.y();
 
 			// b = -B [ Re(Up) Im(Up) ]T
 			Eigen::VectorXd vecb = -matB * vecU;
@@ -251,19 +151,79 @@ namespace freeb
 				m_UVList(vertID * 2 + 1) = X(bIndex + numV - numP);
 				bIndex++;
 			}
-			m_UVList.segment(pID0 * 2, 2) = vecU.segment(0, 2);
-			m_UVList.segment(pID1 * 2, 2) = vecU.segment(2, 2);
 		}
 
 		auto timeEnd = std::chrono::steady_clock::now();
 		auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
 
-		std::cout << "Free Boundary with LSCM in " << ms << " ms\n";
+		std::cout << "[Free Boundary] LSCM End in " << ms << " ms\n";
 	}
 
 	void FreeBoundarySolver::TutteWithMeanValue(acamcad::polymesh::PolyMesh* mesh)
 	{
+		using acamcad::polymesh::MVert;
 
+		auto timeStart = std::chrono::steady_clock::now();
+
+		auto boundaryVertLists = mesh->boundaryVertices();
+		std::cout << "[Free Boundary] Boundary Points [" << boundaryVertLists.size() << "]\n";
+
+		// 1. prepare convex polygon
+		size_t numB = boundaryVertLists.size();
+		size_t numV = mesh->vertices().size();
+
+		// 2. prepare matrix (Eigen::Sparse)
+		Eigen::SparseMatrix<double> A(numV, numV);	A.setZero();
+		Eigen::SparseMatrix<double> x(numV, 2);		x.setZero();
+		Eigen::SparseMatrix<double> b(numV, 2);		b.setZero();
+
+		std::vector<Eigen::Triplet<double>> ATriplets;
+		std::vector<Eigen::Triplet<double>> bTriplets;
+
+		// a) boundary vertices
+		for (auto* pBVert : boundaryVertLists)
+		{
+			size_t vertID = pBVert->index();
+			ATriplets.emplace_back(vertID, vertID, 1.0);
+			bTriplets.emplace_back(vertID, 0, m_UVList(vertID * 2 + 0));
+			bTriplets.emplace_back(vertID, 1, m_UVList(vertID * 2 + 1));
+		}
+
+		// b) inner vertices
+		for (auto* pVert : mesh->vertices())
+		{
+			if (mesh->isBoundary(pVert))	continue;
+
+			size_t vertID = pVert->index();
+
+			auto adjVerts = mesh->vertAdjacentVertices(pVert);
+			auto adjWeights = MeanValueWeight(pVert, adjVerts);
+			double weightSUM = std::accumulate(adjWeights.begin(), adjWeights.end(), 0.0);
+
+			for (int j = 0; j < adjVerts.size(); ++j)
+				ATriplets.emplace_back(vertID, adjVerts[j]->index(), adjWeights[j]);
+			ATriplets.emplace_back(vertID, vertID, -weightSUM);
+		}
+
+		A.setFromTriplets(ATriplets.begin(), ATriplets.end());
+		b.setFromTriplets(bTriplets.begin(), bTriplets.end());
+
+		// 3. solve the equation Ax = b
+		Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+		solver.compute(A);
+		x = solver.solve(b);
+
+		auto timeEnd = std::chrono::steady_clock::now();
+		auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
+
+		std::cout << "[Free Boundary] Tutte's parameterization end in " << ms << "ms\n";
+		
+		for (auto* pVert : mesh->vertices())
+		{
+			if (mesh->isBoundary(pVert)) continue;
+			size_t vertID = pVert->index();
+			m_UVList.segment(vertID * 2, 2) = x.row(vertID);
+		}
 	}
 
 	// constrain UV in range [0, 1]x[0, 1]
@@ -298,32 +258,6 @@ namespace freeb
 			float UVy = static_cast<float>((m_UVList(2 * vertID + 1) - midy) / maxScale);
 			vert->setTexture(UVx * 2.0f, UVy * 2.0f, 0.0);
 		}
-	}
-
-	// Check if the planar m_UVList has no flip-over triangles
-	bool FreeBoundarySolver::CheckPlanar(acamcad::polymesh::PolyMesh* mesh,
-		const std::vector<acamcad::polymesh::MVert*>& boundaries) const
-	{
-		double angle = 0.0;
-
-		size_t nB = boundaries.size();
-		for (size_t b = 0; b < nB; ++b)
-		{
-			size_t n = (b + 1) % nB;
-			size_t p = (b + nB - 1) % nB;
-
-			size_t vpID = boundaries[p]->index();
-			size_t v0ID = boundaries[b]->index();
-			size_t vnID = boundaries[n]->index();
-
-			acamcad::MPoint3 vp(m_UVList[vpID * 2], m_UVList[vpID * 2 + 1], 0.0);
-			acamcad::MPoint3 v0(m_UVList[v0ID * 2], m_UVList[v0ID * 2 + 1], 0.0);
-			acamcad::MPoint3 vn(m_UVList[vnID * 2], m_UVList[vnID * 2 + 1], 0.0);
-
-			angle += acamcad::signedAngle(v0 - vp, vn - v0, { 0, 0, 1 });
-		}
-
-		return std::abs(std::abs(angle) - 2.0 * M_PI) < std::numeric_limits<float>::epsilon();
 	}
 
 	std::vector<double> FreeBoundarySolver::boundaryEdgesLength(const std::vector<acamcad::polymesh::MVert*>& boundaries) const
@@ -369,8 +303,8 @@ namespace freeb
 			Eigen::Vector2d vecC = m_UVList.segment(2 * vjID, 2) - m_UVList.segment(2 * v0ID, 2);
 
 			double a2 = vecA.dot(vecA);
-			double b2 = vecA.dot(vecA);
-			double c2 = vecB.dot(vecB);
+			double b2 = vecB.dot(vecB);
+			double c2 = vecC.dot(vecC);
 
 			double cosA = (b2 + c2 - a2) / (2.0 * std::sqrt(b2) * std::sqrt(c2));
 			cosAnglesNDistanceSquare[i] << cosA, b2;
@@ -380,7 +314,7 @@ namespace freeb
 		{
 			size_t p = (i + nN - 1) % nN;
 
-			double ri = cosAnglesNDistanceSquare[i].y();
+			double ri = std::sqrt(cosAnglesNDistanceSquare[i].y());
 
 			double cosAi = cosAnglesNDistanceSquare[i].x();
 			double cosAp = cosAnglesNDistanceSquare[p].x();
@@ -390,6 +324,8 @@ namespace freeb
 			double tanAp_2 = sinAp / (1.0 + cosAp);
 
 			nWeights[i] = (tanAi_2 + tanAp_2) / ri;
+
+			assert(nWeights[i] > 0.0, "negative!");
 		}
 		
 		return nWeights;

@@ -90,6 +90,5 @@ protected:
 	// ============ hw3: Free Boundary member ============
 	bool isFreeBoundarySolver = false;
 
-	std::vector<char> edgeCut;
 	freeb::FreeBoundarySolver m_FreeBoundarySolver;
 };
