@@ -16,3 +16,9 @@ git checkout hw1_TutteEmbedding
 git checkout hw2_EnergyEigensystems
 ./buid_windows.bat
 ```
+
++ [Done] Homework 3 : Free Boundary Parameterization
+```bash
+git checkout hw3_FreeBoundary
+./build_windows.bat
+```
