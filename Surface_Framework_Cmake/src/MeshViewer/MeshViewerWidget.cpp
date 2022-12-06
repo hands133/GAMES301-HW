@@ -621,6 +621,7 @@ void MeshViewerWidget::ProjNewtonSolver()
 	update();
 }
 
+// ============ hw3: Free Boundary Solver API ============
 void MeshViewerWidget::FreeBoundarySolver()
 {
 	if (polyMesh->numVertices() == 0)
