@@ -506,7 +506,6 @@ Eigen::SparseMatrix<double> MeshViewerWidget::TutteParam(TutteParamType type)
 	int M = boundaryVertLists.size();
 	int N = polyMesh->numVertices();
 
-
 	auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_CIRCLE);
 	//auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_TRIANGLE);
 	//auto boundaryUVs = tutte::GetBoundaryUVs(M, tutte::UVBoundaryType::POLYGON_SQUARE);
