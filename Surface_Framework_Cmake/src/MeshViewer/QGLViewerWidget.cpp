@@ -478,9 +478,9 @@ void QGLViewerWidget::LoadTexture()
 
 	// load and generate texture
 	int width, height, nChannels;
-	//unsigned char* data = stbi_load("../src/Images/tiling patterns/R-C3.jpg", &width, &height, &nChannels, 0);
+	unsigned char* data = stbi_load("../src/Images/tiling patterns/R-C3.jpg", &width, &height, &nChannels, 0);
 	//unsigned char* data = stbi_load("../src/Images/tiling patterns/circle.jpg", &width, &height, &nChannels, 0);
-	unsigned char* data = stbi_load("../src/Images/tiling patterns/pie-factory.png", &width, &height, &nChannels, 0);
+	//unsigned char* data = stbi_load("../src/Images/tiling patterns/pie-factory.png", &width, &height, &nChannels, 0);
 	//unsigned char* data = stbi_load("../src/Images/tiling patterns/cross.jpg", &width, &height, &nChannels, 0);
 	
 	GLint internalFormat = GL_RGBA;
