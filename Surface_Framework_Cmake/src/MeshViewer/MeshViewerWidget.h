@@ -5,6 +5,7 @@
 
 #include "EnergyEigensystems\Util_EnergyEigensystems.h"
 #include "FreeBoundary\Util_FreeBoundary.h"
+#include "BoundaryFirstFlattening\Util_BoundaryFirstFlattening.h"
 
 #include <Eigen\Sparse>
 
@@ -35,6 +36,8 @@ public:
 	void ProjNewtonSolver();
 	// ============ hw3: Boundary Free Method ============
 	void FreeBoundarySolver();
+	// ============ hw4: Boundary First Flattening Method ============
+	void BFFSolver();
 
 signals:
 	void LoadMeshOKSignal(bool, QString);
@@ -91,4 +94,7 @@ protected:
 	bool isFreeBoundarySolver = false;
 
 	freeb::FreeBoundarySolver m_FreeBoundarySolver;
+
+	// ============ hw4: Boundary First Flattening member ============
+	bff::BFFSolver m_BFFSolver;
 };

@@ -47,6 +47,8 @@ protected:
 	void ProjNewtonSolver();
 	// ============ hw3: Free Boundary Solver ============
 	void FreeBoundarySolver();
+	// ============ hw4: Boundary First Flattening Solver ============
+	void BFFSolver();
 
 	void ResetView(void);
 	void ViewCenter(void);

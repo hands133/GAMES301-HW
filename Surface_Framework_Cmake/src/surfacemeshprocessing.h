@@ -59,6 +59,9 @@ private:
 	// ============ hw3: Actions ============
 	QAction* actFreeBoundarySolver;
 
+	// ============ hw4: Actions ============
+	QAction* actBFFSolver;
+
 	// Help Actions.
 	QAction *actAbout;
 

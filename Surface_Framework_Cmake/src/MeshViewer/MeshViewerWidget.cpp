@@ -642,3 +642,25 @@ void MeshViewerWidget::FreeBoundarySolver()
 
 	update();
 }
+
+// ============ hw4: Boundary First Flattening Method ============
+void MeshViewerWidget::BFFSolver()
+{
+	std::cout << "BFF Solver" << std::endl;
+	std::cout << "It's a big work, let's do this" << std::endl;
+
+	if (polyMesh->numVertices() == 0)
+	{
+		std::cerr << "ERROR: ProjNewtonSolver() No vertices!" << std::endl;
+		return;
+	}
+
+	auto timeStart = std::chrono::steady_clock::now();
+
+	m_BFFSolver.Solve(polyMesh);
+
+	auto timeEnd = std::chrono::steady_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
+
+	std::cout << "[BFF] Solver finished with " << ms << " ms\n";
+}

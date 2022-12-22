@@ -155,8 +155,13 @@ void SurfaceMeshProcessing::CreateActions(void)
 
 	// ============ hw3: Actions ============
 	actFreeBoundarySolver = new QAction("Free Boundary Solver", this);
-	actFlat->setStatusTip(tr("Conformal Param with Non-convex Boundary"));
+	actFreeBoundarySolver->setStatusTip(tr("Conformal Param with Non-convex Boundary"));
 	connect(actFreeBoundarySolver, SIGNAL(triggered()), viewer, SLOT(FreeBoundarySolver()));
+
+	// ============ hw4: Actions ============
+	actBFFSolver = new QAction("BFF Solver", this);
+	actBFFSolver->setStatusTip(tr("Boundary First Flattening of various free-boundaries"));
+	connect(actBFFSolver, SIGNAL(triggered()), viewer, SLOT(BFFSolver()));
 
 	actAbout = new QAction(tr("About"), this);
 	connect(actAbout, SIGNAL(triggered()), SLOT(About()));
@@ -208,6 +213,8 @@ void SurfaceMeshProcessing::CreateMenus(void)
 	// free boundary action
 	QMenu* paramFreeB = menuTools->addMenu(tr("Free Boundary Param"));
 	paramFreeB->addAction(actFreeBoundarySolver);
+	// boundary first flattening action
+	paramFreeB->addAction(actBFFSolver);
 
 	QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
 	menuHelp->addAction(actAbout);

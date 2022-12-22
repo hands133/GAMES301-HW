@@ -196,6 +196,11 @@ void MainViewerWidget::FreeBoundarySolver()
 	meshviewerwidget->FreeBoundarySolver();
 }
 
+void MainViewerWidget::BFFSolver()
+{
+	meshviewerwidget->BFFSolver();
+}
+
 void MainViewerWidget::ResetView(void)
 {
 	meshviewerwidget->ResetView();
