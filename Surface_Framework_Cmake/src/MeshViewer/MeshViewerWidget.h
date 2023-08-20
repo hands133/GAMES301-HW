@@ -92,7 +92,6 @@ protected:
 
 	// ============ hw3: Free Boundary member ============
 	bool isFreeBoundarySolver = false;
-
 	freeb::FreeBoundarySolver m_FreeBoundarySolver;
 
 	// ============ hw4: Boundary First Flattening member ============

@@ -390,27 +390,27 @@ void MeshViewerWidget::DrawUVEmbedding() const
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
-	//{
-	//	glDisable(GL_LIGHTING);
-	//	glColor3d(0.2, 0.2, 0.2);
+	{
+		glDisable(GL_LIGHTING);
+		glColor3d(0.2, 0.2, 0.2);
 
-	//	glBegin(GL_LINES);
-	//	for (const auto& eh : polyMesh->edges()) {
-	//		auto heh = eh->halfEdge();
-	//		auto v0 = heh->fromVertex();
-	//		auto v1 = heh->toVertex();
-	//		auto uv0 = v0->getTextureUVW().uv;
-	//		auto uv1 = v1->getTextureUVW().uv;
+		glBegin(GL_LINES);
+		for (const auto& eh : polyMesh->edges()) {
+			auto heh = eh->halfEdge();
+			auto v0 = heh->fromVertex();
+			auto v1 = heh->toVertex();
+			auto uv0 = v0->getTextureUVW().uv;
+			auto uv1 = v1->getTextureUVW().uv;
 
-	//		glNormal3dv(v0->normal().data());
-	//		glVertex3d(uv0[0] * radius + transfer.x(), uv0[1] * radius + transfer.y(), transfer.z());
-	//		glNormal3dv(v1->normal().data());
-	//		glVertex3d(uv1[0] * radius + transfer.x(), uv1[1] * radius + transfer.y(), transfer.z());
-	//	}
-	//	glEnd();
+			glNormal3dv(v0->normal().data());
+			glVertex3d(uv0[0] * radius + transfer.x(), uv0[1] * radius + transfer.y(), transfer.z());
+			glNormal3dv(v1->normal().data());
+			glVertex3d(uv1[0] * radius + transfer.x(), uv1[1] * radius + transfer.y(), transfer.z());
+		}
+		glEnd();
 
-	//	glEnable(GL_LIGHTING);
-	//}
+		glEnable(GL_LIGHTING);
+	}
 }
 
 void MeshViewerWidget::DrawBoundingBox(void) const
@@ -612,7 +612,6 @@ void MeshViewerWidget::ProjNewtonSolver()
 	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
 
 	std::cout << "Project Newton Solver finished with " << ms << " ms\n";
-
 	//m_ProjNewtonSolver.SaveEnergies("energies.txt");
 
 	isProjNewtonSolver = false;
@@ -655,12 +654,23 @@ void MeshViewerWidget::BFFSolver()
 		return;
 	}
 
+	using acamcad::polymesh::MVert;
+
+	/// ====== calculate boundary vertices ======
+
+	// 2. boundary first flattening 
 	auto timeStart = std::chrono::steady_clock::now();
 
-	m_BFFSolver.Solve(polyMesh);
+	m_BFFSolver.Solve(polyMesh, bff::FlattenType::FREE);
+	//m_BFFSolver.Solve(polyMesh, bff::FlattenType::DISK);
+	//m_BFFSolver.SetExteriorAngle(polyMesh->boundaryVertices().size(), tutte::UVBoundaryType::POLYGON_TRIANGLE);
+	//m_BFFSolver.Solve(polyMesh, bff::FlattenType::FIXED);
 
 	auto timeEnd = std::chrono::steady_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
 
 	std::cout << "[BFF] Solver finished with " << ms << " ms\n";
+
+	UpdateMesh();
+	update();
 }
