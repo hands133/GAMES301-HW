@@ -646,7 +646,6 @@ void MeshViewerWidget::FreeBoundarySolver()
 void MeshViewerWidget::BFFSolver()
 {
 	std::cout << "BFF Solver" << std::endl;
-	std::cout << "It's a big work, let's do this" << std::endl;
 
 	if (polyMesh->numVertices() == 0)
 	{
@@ -661,10 +660,12 @@ void MeshViewerWidget::BFFSolver()
 	// 2. boundary first flattening 
 	auto timeStart = std::chrono::steady_clock::now();
 
-	m_BFFSolver.Solve(polyMesh, bff::FlattenType::FREE);
+	//m_BFFSolver.Solve(polyMesh, bff::FlattenType::FREE);
 	//m_BFFSolver.Solve(polyMesh, bff::FlattenType::DISK);
 	//m_BFFSolver.SetExteriorAngle(polyMesh->boundaryVertices().size(), tutte::UVBoundaryType::POLYGON_TRIANGLE);
-	//m_BFFSolver.Solve(polyMesh, bff::FlattenType::FIXED);
+	//m_BFFSolver.SetExteriorAngle(polyMesh->boundaryVertices().size(), tutte::UVBoundaryType::POLYGON_SQUARE);
+	m_BFFSolver.SetExteriorAngle(polyMesh->boundaryVertices().size(), tutte::UVBoundaryType::POLYGON_PENTAGON);
+	m_BFFSolver.Solve(polyMesh, bff::FlattenType::FIXED);
 
 	auto timeEnd = std::chrono::steady_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::microseconds>(timeEnd - timeStart).count() / 1000.0;
