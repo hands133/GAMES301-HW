@@ -22,3 +22,9 @@ git checkout hw2_EnergyEigensystems
 git checkout hw3_FreeBoundary
 ./build_windows.bat
 ```
+
++ [Done] Homework 4 : Boundary First Flattening
+```bash
+git checkout hw4_BoundaryFirstFlattening
+./build_windows.bat
+```
